@@ -14,13 +14,27 @@ const inputElevation = document.querySelector('.form__input--elevation');
 if (navigator.geolocation)
   navigator.geolocation.getCurrentPosition(
     function (position) {
-      const { latitude } = position.coords;
-      const { longitude } = position.coords;
+      const { latitude, longitude } = position.coords;
       console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
+      const coords = [latitude, longitude];
+
+      const map = L.map('map').setView(coords, 13);
+
+      L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      }).addTo(map);
+
+      L.marker(coords)
+        .addTo(map)
+        .bindPopup('A pretty CSS popup.<br> Easily customizable.')
+        .openPopup();
     },
     function () {
       alert('Could not get your position');
     }
   );
 
-// console.log(navigator);
+/////////////////////////////////////////
+// Displaying a Map Using Leaflet Library
