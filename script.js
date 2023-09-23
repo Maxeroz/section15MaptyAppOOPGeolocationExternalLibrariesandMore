@@ -13,34 +13,88 @@ const inputElevation = document.querySelector('.form__input--elevation');
 
 let map, mapEvent;
 
-if (navigator.geolocation)
-  navigator.geolocation.getCurrentPosition(
-    function (position) {
-      const { latitude, longitude } = position.coords;
-      console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+class App {
+  #map;
+  #mapEvent;
 
-      const coords = [latitude, longitude];
+  constructor() {
+    this._getPosition();
 
-      map = L.map('map').setView(coords, 13);
-      console.log(map);
+    form.addEventListener('submit', this._newWorkout.bind(this));
 
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
+    inputType.addEventListener('change', this._toggleElevationField);
+  }
 
-      // Handling clicks on map
-      map.on('click', function (mapE) {
-        mapEvent = mapE;
-        form.classList.remove('hidden');
-        inputDistance.focus();
-      });
-    },
-    function () {
-      alert('Could not get your position');
-    }
-  );
+  _getPosition() {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        this._loadMap.bind(this),
+        function () {
+          alert('Could not get your position');
+        }
+      );
+  }
+
+  _loadMap(position) {
+    const { latitude, longitude } = position.coords;
+    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
+    const coords = [latitude, longitude];
+
+    this.#map = L.map('map').setView(coords, 13);
+    // console.log(this);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
+
+    // Handling clicks on map
+    this.#map.on('click', this._showForm.bind(this));
+  }
+
+  _showForm(mapE) {
+    this.#mapEvent = mapE;
+    form.classList.remove('hidden');
+    inputDistance.focus();
+  }
+
+  _toggleElevationField() {
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+  }
+
+  _newWorkout(e) {
+    e.preventDefault();
+
+    // Clear input fields
+
+    inputDistance.value =
+      inputDuration.value =
+      inputCadence.value =
+      inputElevation.value =
+        '';
+
+    // Display marker
+    const { lat, lng } = this.#mapEvent.latlng;
+    L.marker([lat, lng])
+      .addTo(this.#map)
+      .bindPopup(
+        L.popup({
+          maxWidhth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: 'running-popup',
+        })
+      )
+      .setPopupContent('Workout')
+      .openPopup();
+  }
+}
+
+const app = new App();
 
 /////////////////////////////////////////
 // Displaying a Map Using Leaflet Library
@@ -51,38 +105,8 @@ if (navigator.geolocation)
 /////////////////////////////////////////
 // Rendering Workout Input Form
 
-form.addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  // Clear input fields
-
-  inputDistance.value =
-    inputDuration.value =
-    inputCadence.value =
-    inputElevation.value =
-      '';
-
-  // Display marker
-  const { lat, lng } = mapEvent.latlng;
-  L.marker([lat, lng])
-    .addTo(map)
-    .bindPopup(
-      L.popup({
-        maxWidhth: 250,
-        minWidth: 100,
-        autoClose: false,
-        closeOnClick: false,
-        className: 'running-popup',
-      })
-    )
-    .setPopupContent('Workout')
-    .openPopup();
-});
-
-inputType.addEventListener('change', function () {
-  inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
-  inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-});
-
 /////////////////////////////////////////
 // Project Architecture
+
+/////////////////////////////////////////
+// Refactoring for Project Architecture
