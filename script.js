@@ -44,6 +44,7 @@ class Running extends Workout {
 
 class Cylcing extends Workout {
   type = 'cycling';
+
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
@@ -80,6 +81,7 @@ class App {
 
   constructor() {
     // Get user's position
+
     this._getPosition();
 
     // Get data from local storage
@@ -114,6 +116,7 @@ class App {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.#map);
+    console.log(this.#map);
 
     // Handling clicks on map
     this.#map.on('click', this._showForm.bind(this));
@@ -193,6 +196,7 @@ class App {
 
     // Render workout on map as marker
     this._rederWorkoutMarker(workout);
+
     // Render workout on list
     this._renderWorkout(workout);
 
@@ -343,3 +347,6 @@ const app = new App();
 
 /////////////////////////////////////////
 // Working with localStorag
+
+/////////////////////////////////////////
+// Final Considerations
