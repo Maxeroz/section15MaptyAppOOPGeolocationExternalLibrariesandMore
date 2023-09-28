@@ -374,6 +374,8 @@ class App {
   }
 
   _setEditAttribute(target) {
+    // Set attribute contenteditable to workout options
+
     const workouts = this.#workouts;
     let workoutId;
     const opt = target;
@@ -384,6 +386,7 @@ class App {
     workoutId = opt.closest('.workout').dataset.id;
     workoutObj = workouts.find(work => work.id === workoutId);
 
+    // Checking option value = EDIT WORKOUT
     if (opt.value === 'workout--edit') {
       console.log('Edit');
       // workoutId = opt.closest('.workout').dataset.id;
@@ -405,11 +408,15 @@ class App {
 
       btnSave.addEventListener('click', this._editUIandLocalStorage.bind(this));
     }
+
+    // Checking option value = DELETE WORKOUT
     if (opt.value === 'workout--delete') {
       btnSave.addEventListener('click', this._deleteWorkout.bind(this));
-      // const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
-      // this.#workouts.splice(index);
-      // console.log('Delete');
+    }
+
+    // Checking option value = DELETE ALL
+    if (opt.value === 'workout--delete--all') {
+      btnSave.addEventListener('click', this._deleteAllWorkouts.bind(this));
     }
   }
   _editUIandLocalStorage(e) {
@@ -482,7 +489,6 @@ class App {
     this.#workouts.splice(index);
 
     // Delete marker from map
-
     this.#map.removeLayer(markers[index]);
 
     // Delete workout from the list
@@ -490,6 +496,25 @@ class App {
     this._setLocalStorage(workouts);
 
     console.log('Delete');
+  }
+
+  _deleteAllWorkouts(e) {
+    console.log('Delete All');
+
+    // Empty array with workouts
+    this.#workouts = [];
+
+    // Deleting workouts from the sidebar
+    const allWorkouts = e.target
+      .closest('.workouts')
+      .querySelectorAll('.workout');
+    allWorkouts.forEach(work => work.classList.add('select__hidden'));
+    this._setLocalStorage(this.#workouts);
+
+    // Deleting markers from the map
+    for (let i = 0; i < allWorkouts.length; i++) {
+      this.#map.removeLayer(markers[i]);
+    }
   }
 }
 
