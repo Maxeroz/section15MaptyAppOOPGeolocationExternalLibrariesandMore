@@ -88,12 +88,11 @@ class App {
     // Get data from local storage
     this._getLocalStorage();
 
-    this._workoutOptions();
-
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    this._workoutOptions();
   }
 
   _getPosition() {
@@ -208,6 +207,8 @@ class App {
 
     // Set local storage to all workouts
     this._setLocalStorage();
+
+    this._workoutOptions();
   }
 
   _rederWorkoutMarker(workout) {
@@ -229,6 +230,8 @@ class App {
   }
 
   _renderWorkout(workout) {
+    const numberWorkout = this.#workouts.length;
+
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <h2 class="workout__title">${workout.description}</h2>
@@ -246,16 +249,16 @@ class App {
           <span class="workout__icon">${
             workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '
           }</span>
-          <span class="workout__value workout__edit__distance">${
-            workout.distance
-          }</span>
+          <span class="workout__value workout__edit__distance__${numberWorkout}">${
+      workout.distance
+    }</span>
          <span class="workout__unit">km</span>
         </div>
         <div class="workout__details">
          <span class="workout__icon">⏱</span>
-         <span class="workout__value workout__edit__duration">${
-           workout.duration
-         }</span>
+         <span class="workout__value workout__edit__duration__${numberWorkout}">${
+      workout.duration
+    }</span>
          <span class="workout__unit">min</span>
         </div>`;
 
@@ -263,12 +266,16 @@ class App {
       html += `
         <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value">${workout.pace.toFixed(1)}</span>
+          <span class="workout__value workout__edit__pace__${numberWorkout}">${workout.pace.toFixed(
+        1
+      )}</span>
           <span class="workout__unit">min/km</span>
         </div>
         <div class="workout__details">
          <span class="workout__icon">🦶🏼</span>
-         <span class="workout__value">${workout.cadence}</span>
+         <span class="workout__value workout__edit__cadence__${numberWorkout}">${
+        workout.cadence
+      }</span>
          <span class="workout__unit">spm</span>
         </div>
       </li>
@@ -413,21 +420,38 @@ class App {
         editValueArray[i].setAttribute('contenteditable', 'true');
       }
 
-      const btnSave = document.querySelector('.btnSave');
+      const btnSave = opt.closest('.workout').querySelector('.btnSave');
+
       btnSave.addEventListener('click', this._editUIandLocalStorage.bind(this));
     }
   }
   _editUIandLocalStorage(e) {
+    console.log('hello');
     const workouts = this.#workouts;
 
-    const editDistance = +document.querySelector('.workout__edit__distance')
-      .textContent;
+    const index = workouts.findIndex(work => work.id === workoutObj.id) + 1;
+    console.log(index);
+
+    const editDistance = +document.querySelector(
+      `.workout__edit__distance__${index}`
+    ).textContent;
+    console.log(editDistance);
     workoutObj.distance = editDistance;
-    const editDuration = +document.querySelector('.workout__edit__duration')
-      .textContent;
+    const editDuration = +document.querySelector(
+      `.workout__edit__duration__${index}`
+    ).textContent;
     workoutObj.duration = editDuration;
 
-    console.log(workouts);
+    if (workoutObj.type === 'running') {
+      const editPace = +document.querySelector(`.workout__edit__pace__${index}`)
+        .textContent;
+      workoutObj.pace = editPace;
+      const editCadence = +document.querySelector(
+        `.workout__edit__cadence__${index}`
+      ).textContent;
+      workoutObj.cadence = editCadence;
+    }
+
     this._setLocalStorage(workouts);
     this._removeAttribute(e);
   }
