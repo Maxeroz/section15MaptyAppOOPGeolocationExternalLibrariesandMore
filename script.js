@@ -73,6 +73,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+const markers = [];
 let workoutObj;
 let numberWorkout = 0;
 
@@ -214,21 +215,23 @@ class App {
   }
 
   _rederWorkoutMarker(workout) {
-    L.marker(workout.coords)
-      .addTo(this.#map)
-      .bindPopup(
-        L.popup({
-          maxWidhth: 250,
-          minWidth: 100,
-          autoClose: false,
-          closeOnClick: false,
-          className: `${workout.type}-popup`,
-        })
-      )
-      .setPopupContent(
-        `${workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '} ${workout.description}`
-      )
-      .openPopup();
+    markers.push(
+      new L.marker(workout.coords)
+        .addTo(this.#map)
+        .bindPopup(
+          L.popup({
+            maxWidhth: 250,
+            minWidth: 100,
+            autoClose: false,
+            closeOnClick: false,
+            className: `${workout.type}-popup`,
+          })
+        )
+        .setPopupContent(
+          `${workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '} ${workout.description}`
+        )
+        .openPopup()
+    );
   }
 
   _renderWorkout(workout) {
@@ -288,12 +291,16 @@ class App {
       html += `
         <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value">${workout.speed.toFixed(1)}</span>
+          <span class="workout__value workout__edit__speed__${numberWorkout}">${workout.speed.toFixed(
+        1
+      )}</span>
           <span class="workout__unit">km/h</span>
         </div>
         <div class="workout__details">
           <span class="workout__icon">⛰</span>
-          <span class="workout__value">${workout.elevationGain}</span>
+          <span class="workout__value workout__edit__elevationGain__${numberWorkout}">${
+        workout.elevationGain
+      }</span>
           <span class="workout__unit">m</span>
         </div>
       </li>
@@ -311,6 +318,8 @@ class App {
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
+
+    if (!workout) return;
 
     this.#map.setView(workout.coords, this.#mapZoomLevel, {
       animation: true,
@@ -407,27 +416,48 @@ class App {
     console.log('hello');
     const workouts = this.#workouts;
 
+    // Choosing object from objectd array to edit
+
     const index = workouts.findIndex(work => work.id === workoutObj.id) + 1;
     console.log(index);
+
+    // Common properties for both : Running and Cycling
 
     const editDistance = +document.querySelector(
       `.workout__edit__distance__${index}`
     ).textContent;
-    console.log(editDistance);
+    // console.log(editDistance);
     workoutObj.distance = editDistance;
     const editDuration = +document.querySelector(
       `.workout__edit__duration__${index}`
     ).textContent;
     workoutObj.duration = editDuration;
 
+    // Specific Running Properties
+
     if (workoutObj.type === 'running') {
       const editPace = +document.querySelector(`.workout__edit__pace__${index}`)
         .textContent;
       workoutObj.pace = editPace;
+
       const editCadence = +document.querySelector(
         `.workout__edit__cadence__${index}`
       ).textContent;
       workoutObj.cadence = editCadence;
+    }
+
+    // Specific Cycling Properties
+
+    if (workoutObj.type === 'cycling') {
+      const editSpeed = +document.querySelector(
+        `.workout__edit__speed__${index}`
+      ).textContent;
+      workoutObj.speed = editSpeed;
+
+      const editElevation = +document.querySelector(
+        `.workout__edit__elevationGain__${index}`
+      ).textContent;
+      workoutObj.elevationGain = editElevation;
     }
 
     this._setLocalStorage(workouts);
@@ -446,9 +476,16 @@ class App {
 
   _deleteWorkout(e) {
     const workouts = this.#workouts;
+
+    // Delete workout from array
     const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
     this.#workouts.splice(index);
 
+    // Delete marker from map
+
+    this.#map.removeLayer(markers[index]);
+
+    // Delete workout from the list
     e.target.closest('.workout').classList.add('select__hidden');
     this._setLocalStorage(workouts);
 
