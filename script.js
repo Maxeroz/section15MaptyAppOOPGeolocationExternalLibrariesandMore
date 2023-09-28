@@ -73,6 +73,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const markers = [];
 let workoutObj;
@@ -538,9 +539,9 @@ class App {
     }
   }
 
-  _eventSortBtn(property) {
-    // const inputSortForm = document.querySelector('.sort');
-    // console.log(inputSortForm);
+  _eventSortBtn() {
+    this._sortCheck();
+
     const btnSort = document.querySelector('.btnSort');
 
     // Add event listener on btn sort
@@ -552,23 +553,65 @@ class App {
 
     const workouts = this.#workouts;
 
+    // Add hidden class to all displayed workouts
     const allWorkouts = e.target
       .closest('.workouts')
       .querySelectorAll('.workout');
     allWorkouts.forEach(work => work.classList.add('select__hidden'));
 
+    // Creating condition for sorting input
+    const inputSortValue = document.querySelector('.input__sort').value;
+
+    // Sort by Distance
+    this._sortBy(inputSortValue);
+    // if (inputSort.value === 'Distance') {
+    //   workouts.sort((a, b) => a.distance - b.distance);
+    //   inputSort.value = '';
+    //   // this._setLocalStorage(workouts);
+    //   workouts.forEach(work => {
+    //     this._renderWorkout(work);
+    //   });
+
+    //   console.log(workouts);
+    // }
+
+    // Sort by Duration
+    // if (inputSort.value === 'Duration') {
+    //   workouts.sort((a, b) => a.duration - b.duration);
+    //   inputSort.value = '';
+
+    //   workouts.forEach(work => {
+    //     this._renderWorkout(work);
+    //   });
+    // }
+
+    // if (inputSort.value === 'Speed') {
+    // }
+  }
+
+  _sortCheck() {
+    // Display only when workouts >= 2
+    const workouts = this.#workouts;
+    // console.log(workouts);
+    if (workouts.length >= 2) sortInput.classList.remove('sort__hidden');
+  }
+
+  _sortBy(val) {
+    // Sorting workouts according to input field value
+
+    const property = val.toLowerCase();
+    const workouts = this.#workouts;
+    // Creating condition for sorting input
     const inputSort = document.querySelector('.input__sort');
 
-    if (inputSort.value === 'Distance') {
-      workouts.sort((a, b) => a.distance - b.distance);
-      inputSort.value = '';
-      // this._setLocalStorage(workouts);
-      workouts.forEach(work => {
-        this._renderWorkout(work);
-      });
+    workouts.sort((a, b) => a[property] - b[property]);
+    inputSort.value = '';
 
-      console.log(workouts);
-    }
+    console.log(workouts);
+    // this._setLocalStorage(workouts);
+    workouts.forEach(work => {
+      this._renderWorkout(work);
+    });
   }
 }
 
