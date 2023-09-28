@@ -66,6 +66,15 @@ a:visited {
   width: 0;
 }
 
+.dropdown {
+  background-color: var(--color-dark--2);
+  border-radius: 5px;
+  /* padding: 1.5rem 2.25rem; */
+  /* margin-bottom: 1.75rem; */
+  font-size: 1.7rem;
+  grid-column: 1 / -1;
+}
+
 .workout {
   background-color: var(--color-dark--2);
   border-radius: 5px;
