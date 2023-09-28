@@ -73,6 +73,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const markers = [];
 let workoutObj;
 let numberWorkout = 0;
@@ -99,6 +100,7 @@ class App {
     inputType.addEventListener('change', this.ttoggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     this._workoutOptions();
+    btnDeleteAll.addEventListener('click', this._deleteAllWorkouts.bind(this));
   }
 
   _getPosition() {
@@ -249,7 +251,7 @@ class App {
               <option selected>Choose Option</option>
               <option value="workout--edit">Edit</option>
               <option value="workout--delete">Delete</option>
-              <option value="workout--delete--all">Delete All</option>
+              
             </select>
           <button class="btnSave">Save</butto>
           </div>
@@ -412,7 +414,7 @@ class App {
       target.closest('.workout').addEventListener('keydown', function (e) {
         if (e.target.closest('.workout__value')) {
           // console.log(e.target);
-          if (e.keyCode == 13) event.preventDefault();
+          // if (e.keyCode == 13) e.preventDefault();
         }
       });
       // editValueArray.forEach(opt =>
@@ -505,7 +507,7 @@ class App {
 
     // Delete workout from array
     const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
-    this.#workouts.splice(index);
+    this.#workouts.splice(index, 1);
 
     // Delete marker from map
     this.#map.removeLayer(markers[index]);
@@ -560,7 +562,7 @@ class App {
     if (inputSort.value === 'Distance') {
       workouts.sort((a, b) => a.distance - b.distance);
       inputSort.value = '';
-      this._setLocalStorage(workouts);
+      // this._setLocalStorage(workouts);
       workouts.forEach(work => {
         this._renderWorkout(work);
       });

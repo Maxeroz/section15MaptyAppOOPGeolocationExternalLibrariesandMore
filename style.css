@@ -168,6 +168,17 @@ a:visited {
   transition: all 0.2s;
 }
 
+.btnDeleteAll {
+  width: 25%;
+  padding: 0.3rem 1.1rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-light--3);
+  transition: all 0.2s;
+}
+
 .form {
   background-color: var(--color-dark--2);
   border-radius: 5px;
