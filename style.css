@@ -130,6 +130,44 @@ a:visited {
   opacity: 0;
 }
 
+.sort {
+  display: grid;
+  transition: all 0.5s, transform 1ms;
+}
+
+.input__sort {
+  width: 45%;
+  padding: 0.3rem 1.1rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-light--3);
+  transition: all 0.2s;
+}
+
+.input__sort:focus {
+  outline: none;
+  background-color: #fff;
+}
+
+.input__label {
+  flex: 0 0 40%;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.btnSort {
+  width: 15%;
+  padding: 0.3rem 1.1rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-light--3);
+  transition: all 0.2s;
+}
+
 .form {
   background-color: var(--color-dark--2);
   border-radius: 5px;

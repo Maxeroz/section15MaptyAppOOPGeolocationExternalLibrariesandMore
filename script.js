@@ -91,9 +91,12 @@ class App {
     // Get data from local storage
     this._getLocalStorage();
 
+    // Ability to sort
+    this._eventSortBtn();
+
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
-    inputType.addEventListener('change', this._toggleElevationField);
+    inputType.addEventListener('change', this.ttoggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     this._workoutOptions();
   }
@@ -240,6 +243,7 @@ class App {
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <h2 class="workout__title">${workout.description}</h2>
+
         <div class="dropdown">
             <select name="ability" class="options select__input">
               <option selected>Choose Option</option>
@@ -404,6 +408,20 @@ class App {
         editValueArray[i].setAttribute('contenteditable', 'true');
       }
 
+      // Event delegation event listener: preventing input line breaks by pressing ENTER
+      target.closest('.workout').addEventListener('keydown', function (e) {
+        if (e.target.closest('.workout__value')) {
+          // console.log(e.target);
+          if (e.keyCode == 13) event.preventDefault();
+        }
+      });
+      // editValueArray.forEach(opt =>
+      //   opt.addEventListener('keydown', function (e) {
+      //     // console.log(e.target);
+      //     if (e.keyCode == 13) return;
+      //   })
+      // );
+
       // const btnSave = opt.closest('.workout').querySelector('.btnSave');
 
       btnSave.addEventListener('click', this._editUIandLocalStorage.bind(this));
@@ -414,11 +432,12 @@ class App {
       btnSave.addEventListener('click', this._deleteWorkout.bind(this));
     }
 
-    // Checking option value = DELETE ALL
+    // Checking option value = DELETE ALL WORKOUTS
     if (opt.value === 'workout--delete--all') {
       btnSave.addEventListener('click', this._deleteAllWorkouts.bind(this));
     }
   }
+
   _editUIandLocalStorage(e) {
     console.log('hello');
     const workouts = this.#workouts;
@@ -514,6 +533,39 @@ class App {
     // Deleting markers from the map
     for (let i = 0; i < allWorkouts.length; i++) {
       this.#map.removeLayer(markers[i]);
+    }
+  }
+
+  _eventSortBtn(property) {
+    // const inputSortForm = document.querySelector('.sort');
+    // console.log(inputSortForm);
+    const btnSort = document.querySelector('.btnSort');
+
+    // Add event listener on btn sort
+    btnSort.addEventListener('click', this._sortWorkouts.bind(this));
+  }
+
+  _sortWorkouts(e) {
+    e.preventDefault();
+
+    const workouts = this.#workouts;
+
+    const allWorkouts = e.target
+      .closest('.workouts')
+      .querySelectorAll('.workout');
+    allWorkouts.forEach(work => work.classList.add('select__hidden'));
+
+    const inputSort = document.querySelector('.input__sort');
+
+    if (inputSort.value === 'Distance') {
+      workouts.sort((a, b) => a.distance - b.distance);
+      inputSort.value = '';
+      this._setLocalStorage(workouts);
+      workouts.forEach(work => {
+        this._renderWorkout(work);
+      });
+
+      console.log(workouts);
     }
   }
 }
