@@ -72,7 +72,9 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+
 let workoutObj;
+let numberWorkout = 0;
 
 class App {
   #map;
@@ -230,19 +232,19 @@ class App {
   }
 
   _renderWorkout(workout) {
-    const numberWorkout = this.#workouts.length;
+    numberWorkout++;
 
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <h2 class="workout__title">${workout.description}</h2>
         <div class="dropdown">
-            <select name="ability" class="options">
+            <select name="ability" class="options select__input">
               <option selected>Choose Option</option>
               <option value="workout--edit">Edit</option>
               <option value="workout--delete">Delete</option>
               <option value="workout--delete--all">Delete All</option>
             </select>
-          <button class="btnSave">Save Edited</butto>
+          <button class="btnSave">Save</butto>
           </div>
         
         <div class="workout__details">
@@ -356,58 +358,28 @@ class App {
   }
 
   _editWorkout(e) {
-    const workouts = this.#workouts;
+    // const workouts = this.#workouts;
     // console.log(workouts);
 
     this._setEditAttribute(e.target);
-    // const opt = e.target;
-    // // console.log(this);
-    // if (opt.value === 'workout--edit') {
-    //   workoutId = opt.closest('.workout').dataset.id;
-    //   workoutObj = workouts.find(work => work.id === workoutId);
-    //   console.log('Edit');
-    //   console.log(workoutObj);
-    //   // .setAttribute('contenteditable', 'true');
-
-    //   // EDIT WORKOUT FEATURE
-    //   const editValueArray = opt
-    //     .closest('.workout')
-    //     .querySelectorAll('.workout__value');
-    //   // console.log(editValueArray);
-    //   for (let i = 0; i < editValueArray.length; i++) {
-    //     editValueArray[i].setAttribute('contenteditable', 'true');
-    //   }
-
-    //   const btnSave = document.querySelector('.btnSave');
-    //   btnSave.addEventListener('click', this._editLocalStorage.bind(this));
-
-    // console.log(btnSave);
-    // }
-
-    //   workoutId = opt.closest('.workout').dataset.id;
-    //   workoutObj = workouts.find(work => work.id === workoutId);
-    //   workoutObj.distance = +prompt('Edit distance', '');
-    //   workoutObj.duration = +prompt('Edit duration', '');
-    //   if (workoutObj.type === 'running') {
-    //     workoutObj.pace = +prompt('Edit pace', '');
-    //     workoutObj.cadence = +prompt('Edit cadence', '');
-    //   }
-    //   console.log(workouts);
-    //   this._setLocalStorage(workouts);
-    //   location.reload();
-    // }
   }
 
   _setEditAttribute(target) {
     const workouts = this.#workouts;
     let workoutId;
     const opt = target;
-    console.log(opt);
+
+    const btnSave = opt.closest('.workout').querySelector('.btnSave');
+    // console.log(opt);
     // console.log(this);
+    workoutId = opt.closest('.workout').dataset.id;
+    workoutObj = workouts.find(work => work.id === workoutId);
+
     if (opt.value === 'workout--edit') {
-      workoutId = opt.closest('.workout').dataset.id;
-      workoutObj = workouts.find(work => work.id === workoutId);
       console.log('Edit');
+      // workoutId = opt.closest('.workout').dataset.id;
+      // workoutObj = workouts.find(work => work.id === workoutId);
+      // console.log('Edit');
       console.log(workoutObj);
       // .setAttribute('contenteditable', 'true');
 
@@ -420,9 +392,15 @@ class App {
         editValueArray[i].setAttribute('contenteditable', 'true');
       }
 
-      const btnSave = opt.closest('.workout').querySelector('.btnSave');
+      // const btnSave = opt.closest('.workout').querySelector('.btnSave');
 
       btnSave.addEventListener('click', this._editUIandLocalStorage.bind(this));
+    }
+    if (opt.value === 'workout--delete') {
+      btnSave.addEventListener('click', this._deleteWorkout.bind(this));
+      // const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
+      // this.#workouts.splice(index);
+      // console.log('Delete');
     }
   }
   _editUIandLocalStorage(e) {
@@ -464,6 +442,17 @@ class App {
     for (let i = 0; i < editValueArray.length; i++) {
       editValueArray[i].removeAttribute('contenteditable', 'false');
     }
+  }
+
+  _deleteWorkout(e) {
+    const workouts = this.#workouts;
+    const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
+    this.#workouts.splice(index);
+
+    e.target.closest('.workout').classList.add('select__hidden');
+    this._setLocalStorage(workouts);
+
+    console.log('Delete');
   }
 }
 

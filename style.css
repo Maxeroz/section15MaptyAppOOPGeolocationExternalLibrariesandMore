@@ -122,6 +122,14 @@ a:visited {
   font-weight: 800;
 }
 
+.select__hidden {
+  transform: translateY(-30rem);
+  height: 0;
+  padding: 0 2.25rem;
+  margin-bottom: 0;
+  opacity: 0;
+}
+
 .form {
   background-color: var(--color-dark--2);
   border-radius: 5px;
@@ -178,6 +186,28 @@ a:visited {
 
 .form__btn {
   display: none;
+}
+
+.select__input {
+  width: 40%;
+  padding: 0.3rem 1.1rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-light--3);
+  transition: all 0.2s;
+}
+
+.btnSave {
+  width: 25%;
+  padding: 0.4rem 1.1rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--color-light--3);
+  transition: all 0.2s;
 }
 
 .copyright {
