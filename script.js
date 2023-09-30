@@ -73,12 +73,16 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
-// const sideBar = document.querySelector('.sidebar');
+const modalOverlay = document.querySelector('.modal__overlay');
+const modal = document.querySelector('.modal');
 const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
+const btnCloseModal = document.querySelector('.close');
 const markers = [];
 let workoutObj;
 let numberWorkout = 0;
+// console.log(modalContainer);
+// console.log(btnCloseModal);
 
 class App {
   #map;
@@ -105,16 +109,19 @@ class App {
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     this._workoutOptions();
     btnDeleteAll.addEventListener('click', this._deleteAllWorkouts.bind(this));
+    btnCloseModal.addEventListener('click', this._closeModal);
+    document.addEventListener('keydown', this._closeModalKey.bind(this));
+    modalOverlay.addEventListener('click', this._closeModal);
   }
 
   _getPosition() {
     if (navigator.geolocation)
       navigator.geolocation.getCurrentPosition(
         this._loadMap.bind(this),
-        function () {
-          alert('Could not get your position');
-        }
+        this._showErrorModal
       );
+    // function ()
+    //   alert('Could not get your position');
   }
 
   _loadMap(position) {
@@ -134,6 +141,7 @@ class App {
 
     // Handling clicks on map
     this.#map.on('click', this._showForm.bind(this));
+    // this.#map.setZIndex(0);
 
     this.#workouts.forEach(work => this._rederWorkoutMarker(work));
   }
@@ -352,8 +360,11 @@ class App {
 
   _getLocalStorage() {
     // Get items from local storage with prototype chain
+
     const data = JSON.parse(localStorage.getItem('workouts'));
-    console.log(data);
+    // console.log(data);
+    if (!data) return;
+
     let type;
     let dataProto = [];
 
@@ -617,6 +628,24 @@ class App {
     workouts.forEach(work => {
       this._renderWorkout(work);
     });
+  }
+
+  _showErrorModal() {
+    // Render modal with error message
+    modalOverlay.classList.add('show');
+    modal.classList.add('show');
+  }
+
+  _closeModal() {
+    // Hide modal by clicking close button
+    modalOverlay.classList.remove('show');
+    modal.classList.remove('show');
+  }
+
+  _closeModalKey(e) {
+    if (e.key === 'Escape' && modalOverlay.classList.contains('show')) {
+      this._closeModal();
+    }
   }
 }
 
