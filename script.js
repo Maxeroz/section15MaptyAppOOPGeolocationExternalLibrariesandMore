@@ -73,6 +73,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+// const sideBar = document.querySelector('.sidebar');
 const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const markers = [];
@@ -96,9 +97,11 @@ class App {
     // Ability to sort
     this._eventSortBtn();
 
+    this._sortCheck();
+
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
-    inputType.addEventListener('change', this.ttoggleElevationField);
+    inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     this._workoutOptions();
     btnDeleteAll.addEventListener('click', this._deleteAllWorkouts.bind(this));
@@ -217,7 +220,11 @@ class App {
     // Set local storage to all workouts
     this._setLocalStorage();
 
+    // Attaching event listener to edit and delete options
     this._workoutOptions();
+
+    // Render sorting form from the side bar
+    this._sortCheck();
   }
 
   _rederWorkoutMarker(workout) {
@@ -344,11 +351,36 @@ class App {
   }
 
   _getLocalStorage() {
+    // Get items from local storage with prototype chain
     const data = JSON.parse(localStorage.getItem('workouts'));
+    console.log(data);
+    let type;
+    let dataProto = [];
 
-    if (!data) return;
+    for (let i = 0; i < data.length; i++) {
+      data[i].type === 'running'
+        ? `${dataProto.push(Object.assign(new Running(), data[i]))}`
+        : `${dataProto.push(Object.assign(new Cylcing(), data[i]))}`;
+    }
 
-    this.#workouts = data;
+    // for (let i = 0; i < data.length; i++) {
+    //   type = data[i].type;
+    //   if (type === 'running') {
+    //     const objProto = Object.assign(new Running(), data[i]);
+    //     console.log(dataProto);
+    //     dataProto.push(objProto);
+    //     console.log(dataProto);
+    //   } else {
+    //     const objProto = Object.assign(new Cylcing(), data[i]);
+    //     console.log(dataProto);
+    //     dataProto.push(objProto);
+    //     console.log(dataProto);
+    //   }
+    // }
+
+    if (!dataProto) return;
+
+    this.#workouts = dataProto;
 
     this.#workouts.forEach(work => {
       this._renderWorkout(work);
@@ -432,12 +464,8 @@ class App {
 
     // Checking option value = DELETE WORKOUT
     if (opt.value === 'workout--delete') {
+      btnSave.textContent = 'Accept';
       btnSave.addEventListener('click', this._deleteWorkout.bind(this));
-    }
-
-    // Checking option value = DELETE ALL WORKOUTS
-    if (opt.value === 'workout--delete--all') {
-      btnSave.addEventListener('click', this._deleteAllWorkouts.bind(this));
     }
   }
 
@@ -523,6 +551,9 @@ class App {
   _deleteAllWorkouts(e) {
     console.log('Delete All');
 
+    // Removing sorting form from the side bar
+    sortInput.classList.add('sort__hidden');
+
     // Empty array with workouts
     this.#workouts = [];
 
@@ -540,8 +571,6 @@ class App {
   }
 
   _eventSortBtn() {
-    this._sortCheck();
-
     const btnSort = document.querySelector('.btnSort');
 
     // Add event listener on btn sort
@@ -564,29 +593,6 @@ class App {
 
     // Sort by Distance
     this._sortBy(inputSortValue);
-    // if (inputSort.value === 'Distance') {
-    //   workouts.sort((a, b) => a.distance - b.distance);
-    //   inputSort.value = '';
-    //   // this._setLocalStorage(workouts);
-    //   workouts.forEach(work => {
-    //     this._renderWorkout(work);
-    //   });
-
-    //   console.log(workouts);
-    // }
-
-    // Sort by Duration
-    // if (inputSort.value === 'Duration') {
-    //   workouts.sort((a, b) => a.duration - b.duration);
-    //   inputSort.value = '';
-
-    //   workouts.forEach(work => {
-    //     this._renderWorkout(work);
-    //   });
-    // }
-
-    // if (inputSort.value === 'Speed') {
-    // }
   }
 
   _sortCheck() {
@@ -598,7 +604,6 @@ class App {
 
   _sortBy(val) {
     // Sorting workouts according to input field value
-
     const property = val.toLowerCase();
     const workouts = this.#workouts;
     // Creating condition for sorting input
