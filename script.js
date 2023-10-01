@@ -247,7 +247,7 @@ class App {
 
   _rederWorkoutMarker(workout) {
     markers.push(
-      new L.marker(workout.coords)
+      new L.marker(workout.coords, { icon: this._chooseIcon('start') })
         .addTo(this.#map)
         .bindPopup(
           L.popup({
@@ -678,6 +678,18 @@ class App {
       waypoints: [L.latLng(57.74, 11.94), L.latLng(57.6792, 11.949)],
     }).addTo(this.#map);
     console.log(this.#map);
+  }
+
+  _chooseIcon(point) {
+    // Choosing icon for both START AND FINISH POINTS
+    const icon = L.icon({
+      iconUrl: `${point}.png`,
+
+      iconSize: [32, 32], // size of the icon
+      iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
+      popupAnchor: [0, -26], // point from which the popup should open relative to the iconAnchor
+    });
+    return icon;
   }
 }
 
