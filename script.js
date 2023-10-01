@@ -75,6 +75,11 @@ const inputElevation = document.querySelector('.form__input--elevation');
 
 const modalOverlay = document.querySelector('.modal__overlay');
 const modal = document.querySelector('.modal');
+
+const modalConfirm = document.querySelector('.confirm__delete__all');
+const btnAccept = document.querySelector('.accept');
+
+const btnShowAll = document.querySelector('.btnShowAll');
 const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const btnCloseModal = document.querySelector('.close');
@@ -112,6 +117,7 @@ class App {
     btnCloseModal.addEventListener('click', this._closeModal);
     document.addEventListener('keydown', this._closeModalKey.bind(this));
     modalOverlay.addEventListener('click', this._closeModal);
+    btnShowAll.addEventListener('click', this._showAllWorkouts.bind(this));
   }
 
   _getPosition() {
@@ -556,29 +562,38 @@ class App {
     e.target.closest('.workout').classList.add('select__hidden');
     this._setLocalStorage(workouts);
 
-    console.log('Delete');
+    // Check if workouts more than 1, then render or remove input sort
+    this._sortCheck();
+    // console.log('Delete');
   }
 
   _deleteAllWorkouts(e) {
-    console.log('Delete All');
+    // Render confirmation modal with overlay
+    modalOverlay.classList.add('show');
+    modalConfirm.classList.add('show');
 
-    // Removing sorting form from the side bar
-    sortInput.classList.add('sort__hidden');
+    const deleteAll = function () {
+      console.log('Delete All');
+      // Removing sorting form from the side bar
+      sortInput.classList.add('sort__hidden');
+      // Empty array with workouts
+      this.#workouts = [];
+      // Deleting workouts from the sidebar
+      const allWorkouts = e.target
+        .closest('.workouts')
+        .querySelectorAll('.workout');
+      allWorkouts.forEach(work => work.classList.add('select__hidden'));
+      this._setLocalStorage(this.#workouts);
+      // Deleting markers from the map
+      for (let i = 0; i < allWorkouts.length; i++) {
+        this.#map.removeLayer(markers[i]);
+      }
 
-    // Empty array with workouts
-    this.#workouts = [];
+      modalOverlay.classList.remove('show');
+      modalConfirm.classList.remove('show');
+    };
 
-    // Deleting workouts from the sidebar
-    const allWorkouts = e.target
-      .closest('.workouts')
-      .querySelectorAll('.workout');
-    allWorkouts.forEach(work => work.classList.add('select__hidden'));
-    this._setLocalStorage(this.#workouts);
-
-    // Deleting markers from the map
-    for (let i = 0; i < allWorkouts.length; i++) {
-      this.#map.removeLayer(markers[i]);
-    }
+    btnAccept.addEventListener('click', deleteAll.bind(this));
   }
 
   _eventSortBtn() {
@@ -607,23 +622,29 @@ class App {
   }
 
   _sortCheck() {
-    // Display only when workouts >= 2
+    // Display sort inputs only when workouts >= 2
     const workouts = this.#workouts;
-    // console.log(workouts);
-    if (workouts.length >= 2) sortInput.classList.remove('sort__hidden');
+
+    workouts.length >= 2
+      ? sortInput.classList.remove('sort__hidden')
+      : sortInput.classList.add('sort__hidden');
+
+    // if (workouts.length >= 2) sortInput.classList.remove('sort__hidden');
+    // if (workouts.length < 2) sortInput.classList.add('sort__hidden');
   }
 
   _sortBy(val) {
     // Sorting workouts according to input field value
     const property = val.toLowerCase();
     const workouts = this.#workouts;
+
     // Creating condition for sorting input
     const inputSort = document.querySelector('.input__sort');
 
     workouts.sort((a, b) => a[property] - b[property]);
     inputSort.value = '';
 
-    console.log(workouts);
+    // console.log(workouts);
     // this._setLocalStorage(workouts);
     workouts.forEach(work => {
       this._renderWorkout(work);
@@ -642,41 +663,26 @@ class App {
     modal.classList.remove('show');
   }
 
+  _closeConfirmation() {
+    // Hide confirmation modal by clicking Esc
+    modalOverlay.classList.remove('show');
+    modalConfirm.classList.remove('show');
+  }
+
   _closeModalKey(e) {
     if (e.key === 'Escape' && modalOverlay.classList.contains('show')) {
       this._closeModal();
     }
+    if (e.key === 'Escape' && modalConfirm.classList.contains('show')) {
+      this._closeConfirmation();
+    }
+  }
+
+  _showAllWorkouts() {
+    // Position view to show all workouts on the map
+    const group = new L.featureGroup(markers);
+    this.#map.fitBounds(group.getBounds());
   }
 }
 
 const app = new App();
-
-/////////////////////////////////////////
-// Displaying a Map Using Leaflet Library
-
-/////////////////////////////////////////
-// Displaying a Map Marker
-
-/////////////////////////////////////////
-// Rendering Workout Input Form
-
-/////////////////////////////////////////
-// Project Architecture
-
-/////////////////////////////////////////
-// Refactoring for Project Architecture
-
-/////////////////////////////////////////
-// Managing Workout Data: Creating Classes
-
-/////////////////////////////////////////
-// Rendering Workouts
-
-/////////////////////////////////////////
-// Move to Marker On Click
-
-/////////////////////////////////////////
-// Working with localStorag
-
-/////////////////////////////////////////
-// Final Considerations
