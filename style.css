@@ -442,3 +442,7 @@ a:visited {
   pointer-events: auto;
   opacity: 1;
 }
+
+.leaflet-routing-alternatives-container {
+  color: var(--color-dark--1);
+}

@@ -118,6 +118,7 @@ class App {
     document.addEventListener('keydown', this._closeModalKey.bind(this));
     modalOverlay.addEventListener('click', this._closeModal);
     btnShowAll.addEventListener('click', this._showAllWorkouts.bind(this));
+    modalOverlay.addEventListener('click', this._closeConfirmation);
   }
 
   _getPosition() {
@@ -146,10 +147,13 @@ class App {
     // console.log(this.#map);
 
     // Handling clicks on map
+    ///////////////////////////////////////////////////////////////////
     this.#map.on('click', this._showForm.bind(this));
-    // this.#map.setZIndex(0);
+    ///////////////////////////////////////////////////////////////////
 
     this.#workouts.forEach(work => this._rederWorkoutMarker(work));
+
+    // this._routingControl();
   }
 
   _showForm(mapE) {
@@ -379,21 +383,6 @@ class App {
         ? `${dataProto.push(Object.assign(new Running(), data[i]))}`
         : `${dataProto.push(Object.assign(new Cylcing(), data[i]))}`;
     }
-
-    // for (let i = 0; i < data.length; i++) {
-    //   type = data[i].type;
-    //   if (type === 'running') {
-    //     const objProto = Object.assign(new Running(), data[i]);
-    //     console.log(dataProto);
-    //     dataProto.push(objProto);
-    //     console.log(dataProto);
-    //   } else {
-    //     const objProto = Object.assign(new Cylcing(), data[i]);
-    //     console.log(dataProto);
-    //     dataProto.push(objProto);
-    //     console.log(dataProto);
-    //   }
-    // }
 
     if (!dataProto) return;
 
@@ -682,6 +671,13 @@ class App {
     // Position view to show all workouts on the map
     const group = new L.featureGroup(markers);
     this.#map.fitBounds(group.getBounds());
+  }
+
+  _routingControl() {
+    L.Routing.control({
+      waypoints: [L.latLng(57.74, 11.94), L.latLng(57.6792, 11.949)],
+    }).addTo(this.#map);
+    console.log(this.#map);
   }
 }
 
