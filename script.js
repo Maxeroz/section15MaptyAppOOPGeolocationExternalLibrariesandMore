@@ -685,11 +685,15 @@ class App {
       const workoutEl = document.querySelectorAll('.workout');
       workoutEl.forEach(work => (work.style.display = 'none'));
 
-      const allWorkouts = e.target
-        .closest('.workouts')
-        .querySelectorAll('.workout');
+      const allWorkouts = Array.from(
+        e.target.closest('.workouts').getElementsByClassName('workout')
+      );
 
-      allWorkouts.forEach(work => work.classList.add('select__hidden'));
+      allWorkouts.forEach(work => {
+        work.classList.add('select__hidden');
+        work.remove();
+      });
+      // console.log(allWorkouts.length);
 
       // Deleting markers from the map
       for (let i = 0; i < allWorkouts.length; i++) {
