@@ -316,7 +316,7 @@ class App {
 
   _rederWorkoutMarker(workout) {
     markers.push(
-      new L.marker(workout.coords, { icon: this._chooseIcon('start') })
+      new L.marker(workout.coords, { icon: null })
         .addTo(this.#map)
         .bindPopup(
           L.popup({
@@ -335,6 +335,11 @@ class App {
   }
 
   _renderWorkout(workout) {
+    // Create later, not able to get access to summary property of route
+    const currentRoute = routes[numberWorkout];
+    // const { totalDistance, totalTime } = currentRoute._selectedRoute;
+    // console.log(totalDistance, totalTime);
+
     numberWorkout++;
 
     let html = `
@@ -557,16 +562,13 @@ class App {
   }
 
   _editUIandLocalStorage(e) {
-    console.log('hello');
     const workouts = this.#workouts;
 
     // Choosing object from objectd array to edit
-
     const index = workouts.findIndex(work => work.id === workoutObj.id) + 1;
     console.log(index);
 
     // Common properties for both : Running and Cycling
-
     const editDistance = +document.querySelector(
       `.workout__edit__distance__${index}`
     ).textContent;
@@ -578,7 +580,6 @@ class App {
     workoutObj.duration = editDuration;
 
     // Specific Running Properties
-
     if (workoutObj.type === 'running') {
       const editPace = +document.querySelector(`.workout__edit__pace__${index}`)
         .textContent;
@@ -591,7 +592,6 @@ class App {
     }
 
     // Specific Cycling Properties
-
     if (workoutObj.type === 'cycling') {
       const editSpeed = +document.querySelector(
         `.workout__edit__speed__${index}`
@@ -606,13 +606,15 @@ class App {
 
     this._setLocalStorage(workouts);
     this._removeAttribute(e);
+
+    this._renderStartedModal();
   }
 
   _removeAttribute(e) {
     const editValueArray = e.target
       .closest('.workout')
       .querySelectorAll('.workout__value');
-    // console.log(editValueArray);
+
     for (let i = 0; i < editValueArray.length; i++) {
       editValueArray[i].removeAttribute('contenteditable', 'false');
     }
@@ -624,19 +626,23 @@ class App {
     // Delete workout from array
     const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
     this.#workouts.splice(index, 1);
+    console.log(index);
 
     // Delete marker from map
     const startAndFinishMarkers = markers[index];
 
     // Delete route from map
     routes[index].remove();
+    // routes = [];
+
+    routes.splice(index, 1);
 
     for (let i = 0; i < startAndFinishMarkers.length; i++) {
       this.#map.removeLayer(startAndFinishMarkers[i]);
     }
 
     // Delete workout from the list
-    e.target.closest('.workout').classList.add('select__hidden');
+    e.target.closest('.workout').remove();
     this._setLocalStorage(workouts);
 
     // Check if workouts more than 1, then render or remove input sort
@@ -658,12 +664,14 @@ class App {
     starterModal.classList.add('starter-hidden');
 
     const deleteAll = function () {
-      console.log('Delete All');
       // Removing sorting form from the side bar
       sortInput.classList.add('sort__hidden');
       // Empty array with workouts
       this.#workouts = [];
       // Deleting workouts from the sidebar :
+
+      // Deleting workouts form localStorage
+      this._setLocalStorage(this.#workouts);
 
       // Add display "none" style to current workouts
       const workoutEl = document.querySelectorAll('.workout');
@@ -672,12 +680,17 @@ class App {
       const allWorkouts = e.target
         .closest('.workouts')
         .querySelectorAll('.workout');
+
       allWorkouts.forEach(work => work.classList.add('select__hidden'));
-      this._setLocalStorage(this.#workouts);
+
       // Deleting markers from the map
       for (let i = 0; i < allWorkouts.length; i++) {
-        this.#map.removeLayer(markers[i]);
+        // Delete all routes from map
+        routes[i].remove();
+
+        // this.#map.removeLayer(markers[i]);
       }
+      routes = [];
 
       modalOverlay.classList.remove('show');
       modalConfirm.classList.remove('show');
@@ -702,7 +715,7 @@ class App {
     const allWorkouts = e.target
       .closest('.workouts')
       .querySelectorAll('.workout');
-    allWorkouts.forEach(work => work.classList.add('select__hidden'));
+    allWorkouts.forEach(work => work.classList.add('sorting__hidden'));
 
     // Creating condition for sorting input
     const inputSortValue = document.querySelector('.input__sort').value;
@@ -806,6 +819,8 @@ class App {
     const workoutMarkers = [];
     // console.log(latStart, latFinish);
 
+    let marker;
+
     const route = new L.Routing.control({
       waypoints: [L.latLng(latStart, lngStart), L.latLng(latFinish, lngFinish)],
       createMarker: function (i, start, n) {
@@ -817,7 +832,7 @@ class App {
           marker_icon = createIcon('finish');
         }
 
-        let marker = L.marker(start.latLng, {
+        marker = L.marker(start.latLng, {
           draggable: false,
           bounceOnAdd: false,
           bounceOnAddOptions: {
@@ -825,16 +840,31 @@ class App {
             height: 800,
             autoClose: false,
             closeOnClick: false,
-            function() {
-              bindPopup(myPopup).openOn(map);
-            },
           },
           icon: marker_icon,
         });
+
         workoutMarkers.push(marker);
         return marker;
       },
     }).addTo(this.#map);
+
+    marker
+      .bindPopup(
+        L.popup({
+          maxWidhth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: `${workout.type}-popup`,
+        })
+      )
+      .setPopupContent(
+        `${workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '} ${workout.description}`
+      )
+      .openPopup();
+
+    console.log(route);
     routes.push(route);
 
     markers.push(workoutMarkers);
@@ -871,16 +901,3 @@ class App {
 }
 
 const app = new App();
-
-////////////////////////////////////////////////
-
-const arr = [
-  [1, 2],
-  [3, 4],
-];
-
-console.log(arr);
-
-for (let i = 0; i < arr.length; i++) {
-  console.log(arr.flat());
-}
