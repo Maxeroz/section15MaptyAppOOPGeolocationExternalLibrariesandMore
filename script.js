@@ -89,7 +89,7 @@ const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const btnCloseModal = document.querySelector('.close');
 
-let route;
+let routes = [];
 const markers = [];
 const distance = '';
 
@@ -629,7 +629,7 @@ class App {
     const startAndFinishMarkers = markers[index];
 
     // Delete route from map
-    route.remove();
+    routes[index].remove();
 
     for (let i = 0; i < startAndFinishMarkers.length; i++) {
       this.#map.removeLayer(startAndFinishMarkers[i]);
@@ -806,7 +806,7 @@ class App {
     const workoutMarkers = [];
     // console.log(latStart, latFinish);
 
-    route = L.Routing.control({
+    const route = new L.Routing.control({
       waypoints: [L.latLng(latStart, lngStart), L.latLng(latFinish, lngFinish)],
       createMarker: function (i, start, n) {
         let marker_icon = null;
@@ -835,6 +835,7 @@ class App {
         return marker;
       },
     }).addTo(this.#map);
+    routes.push(route);
 
     markers.push(workoutMarkers);
 
