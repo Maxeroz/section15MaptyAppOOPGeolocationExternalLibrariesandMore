@@ -90,6 +90,7 @@ const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const btnCloseModal = document.querySelector('.close');
 const markers = [];
 const distance = '';
+const starterModal = document.querySelector('.starter');
 
 let workoutObj;
 let numberWorkout = 0;
@@ -117,6 +118,9 @@ class App {
     this._eventSortBtn();
 
     this._sortCheck();
+
+    // Render starting modal window
+    this._renderStartedModal();
 
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
@@ -799,6 +803,12 @@ class App {
 
     // console.log(headingDistance);
     // document.querySelector('h3');
+  }
+
+  _renderStartedModal() {
+    setTimeout(function () {
+      starterModal.classList.remove('starter-hidden');
+    }, 400);
   }
 }
 

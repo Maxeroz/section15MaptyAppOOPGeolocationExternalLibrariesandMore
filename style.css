@@ -519,3 +519,7 @@ a:visited {
 .leaflet-control-zoom {
   top: 100px;
 }
+
+.starter-hidden {
+  opacity: 0;
+}
