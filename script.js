@@ -608,6 +608,14 @@ class App {
     this._removeAttribute(e);
 
     this._renderStartedModal();
+
+    // Back to default STARTER modal
+    starterModal.classList.add('starter-hidden');
+
+    setTimeout(function () {
+      starterModal.classList.remove('starter-hidden');
+      starterModal.textContent = 'Choose starting point for one more workout';
+    }, 450);
   }
 
   _removeAttribute(e) {
@@ -818,6 +826,7 @@ class App {
     const [latFinish, lngFinish] = workout.coordsFinish;
     const workoutMarkers = [];
     // console.log(latStart, latFinish);
+    const startAndFinishMarkers = [];
 
     let marker;
 
@@ -845,24 +854,33 @@ class App {
         });
 
         workoutMarkers.push(marker);
+        startAndFinishMarkers.push(marker);
         return marker;
       },
     }).addTo(this.#map);
 
-    marker
-      .bindPopup(
-        L.popup({
-          maxWidhth: 250,
-          minWidth: 100,
-          autoClose: false,
-          closeOnClick: false,
-          className: `${workout.type}-popup`,
-        })
-      )
-      .setPopupContent(
-        `${workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '} ${workout.description}`
-      )
-      .openPopup();
+    console.log(startAndFinishMarkers);
+
+    startAndFinishMarkers.forEach((marker, i) => {
+      if (i === 0) {
+        marker
+          .bindPopup(
+            L.popup({
+              maxWidhth: 250,
+              minWidth: 100,
+              autoClose: false,
+              closeOnClick: false,
+              className: `${workout.type}-popup`,
+            })
+          )
+          .setPopupContent(
+            `${workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '} ${
+              workout.description
+            }`
+          )
+          .openPopup();
+      }
+    });
 
     console.log(route);
     routes.push(route);
