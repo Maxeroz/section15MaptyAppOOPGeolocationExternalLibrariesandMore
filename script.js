@@ -706,6 +706,11 @@ class App {
 
       modalOverlay.classList.remove('show');
       modalConfirm.classList.remove('show');
+
+      setTimeout(function () {
+        starterModal.classList.remove('starter-hidden');
+        starterModal.textContent = 'Choose your starting point';
+      }, 450);
     };
 
     btnAccept.addEventListener('click', deleteAll.bind(this));
@@ -770,6 +775,8 @@ class App {
     // Render modal with error message
     modalOverlay.classList.add('show');
     modal.classList.add('show');
+    // Hide modal START/FINISH
+    starterModal.style.opacity = 0;
   }
 
   _closeModal() {
