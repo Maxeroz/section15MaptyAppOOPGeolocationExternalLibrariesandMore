@@ -5,8 +5,9 @@ class Workout {
   id = (Date.now() + '').slice(-10);
   clicks = 0;
 
-  constructor(coords, distance, duration) {
+  constructor(coords, coordsFinish, distance, duration) {
     this.coords = coords; // [lan, lng]
+    this.coordsFinish = coordsFinish;
     this.distance = distance; // in km
     this.duration = duration; // in min
   }
@@ -28,8 +29,8 @@ class Workout {
 class Running extends Workout {
   type = 'running';
 
-  constructor(coords, distance, duration, cadence) {
-    super(coords, distance, duration);
+  constructor(coords, coordsFinish, distance, duration, cadence) {
+    super(coords, coordsFinish, distance, duration);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -45,8 +46,8 @@ class Running extends Workout {
 class Cylcing extends Workout {
   type = 'cycling';
 
-  constructor(coords, distance, duration, elevationGain) {
-    super(coords, distance, duration);
+  constructor(coords, coordsFinish, distance, duration, elevationGain) {
+    super(coords, coordsFinish, distance, duration);
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
@@ -59,9 +60,10 @@ class Cylcing extends Workout {
   }
 }
 
-// const run1 = new Running([39, -12], 5.2, 24, 178);
+// const run1 = new Running([39, -12], [0, 0], 5.2, 24, 178);
 // const cycling1 = new Cylcing([39, 12], 27, 95, 523);
 // console.log(run1, cycling1);
+// console.log(run1);
 
 /////////////////////////////////////////
 // APPLICATION ARCHITECTURE
@@ -80,14 +82,19 @@ const modalConfirm = document.querySelector('.confirm__delete__all');
 const btnAccept = document.querySelector('.accept');
 
 const sideBar = document.querySelector('.sidebar');
+const modalStartFinish = document.querySelector('.start__finish');
 
 const btnShowAll = document.querySelector('.btnShowAll');
 const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const btnCloseModal = document.querySelector('.close');
 const markers = [];
+const distance = '';
+
 let workoutObj;
 let numberWorkout = 0;
+
+let clicksOnMap = 0;
 // console.log(modalContainer);
 // console.log(btnCloseModal);
 
@@ -96,6 +103,7 @@ class App {
   #mapZoomLevel = 15;
   #mapEvent;
   #workouts = [];
+  #mapEventFinish;
 
   constructor() {
     // Get user's position
@@ -153,15 +161,36 @@ class App {
     this.#map.on('click', this._showForm.bind(this));
     ///////////////////////////////////////////////////////////////////
 
-    this.#workouts.forEach(work => this._rederWorkoutMarker(work));
+    // this.#workouts.forEach(work => this._rederWorkoutMarker(work));
+    this.#workouts.forEach(work => this._routingControl(work));
 
-    this._routingControl();
+    // this._routingControl();
   }
 
   _showForm(mapE) {
-    this.#mapEvent = mapE;
-    form.classList.remove('hidden');
-    inputDistance.focus();
+    // Choosing coords for START and FINISH
+
+    // Adding START coords for workout
+    if (clicksOnMap === 0) {
+      this.#mapEvent = mapE;
+
+      // Render modal START FINISH points
+      modalStartFinish.style.opacity = 1;
+      modalStartFinish.textContent = "You've just chosen starting point";
+
+      clicksOnMap = 1;
+      console.log(clicksOnMap);
+    }
+
+    // Adding FINISH coords for workout
+    else if (clicksOnMap === 1) {
+      modalStartFinish.textContent = "You've just chosen finishing point";
+      this.#mapEventFinish = mapE;
+      clicksOnMap = 0;
+
+      form.classList.remove('hidden');
+      inputDistance.focus();
+    }
   }
 
   _hideForm() {
@@ -194,6 +223,8 @@ class App {
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
+    const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
+
     let workout;
 
     // If workout running, create running object
@@ -209,7 +240,13 @@ class App {
       )
         return alert('Inputs have to be positive numbers!');
 
-      workout = new Running([lat, lng], distance, duration, cadence);
+      workout = new Running(
+        [lat, lng],
+        [latFinish, lngFinish],
+        distance,
+        duration,
+        cadence
+      );
     }
 
     // If workout cycling, create cycling object
@@ -222,20 +259,30 @@ class App {
       )
         return alert('Inputs have to be positive numbers!');
 
-      workout = new Cylcing([lat, lng], distance, duration, elevation);
+      workout = new Cylcing(
+        [lat, lng],
+        [latFinish, lngFinish],
+        distance,
+        duration,
+        elevation
+      );
     }
 
     // Add new object to workout array
     this.#workouts.push(workout);
 
     // Render workout on map as marker
-    this._rederWorkoutMarker(workout);
+    // this._rederWorkoutMarker(workout);
+    this._routingControl(workout);
 
     // Render workout on list
     this._renderWorkout(workout);
 
     // Hide form + clear input fields
     this._hideForm();
+
+    // Hide modal START/FINISH
+    modalStartFinish.style.opacity = 0;
 
     // Set local storage to all workouts
     this._setLocalStorage();
@@ -692,7 +739,7 @@ class App {
     return icon;
   }
 
-  _routingControl() {
+  _routingControl(workout) {
     // Creating icons for both points START end FINISH
     const createIcon = function (point) {
       const icon = L.icon({
@@ -707,8 +754,9 @@ class App {
 
     if (this.#workouts.length === 0) return;
 
-    const [latStart, lngStart] = this.#workouts[0].coords;
-    const [latFinish, lngFinish] = this.#workouts[1].coords;
+    const [latStart, lngStart] = workout.coords;
+    const [latFinish, lngFinish] = workout.coordsFinish;
+    const workoutMarkers = [];
     // console.log(latStart, latFinish);
 
     L.Routing.control({
@@ -728,15 +776,29 @@ class App {
           bounceOnAddOptions: {
             duration: 1000,
             height: 800,
+            autoClose: false,
+            closeOnClick: false,
             function() {
               bindPopup(myPopup).openOn(map);
             },
           },
           icon: marker_icon,
         });
+        workoutMarkers.push(marker);
         return marker;
       },
     }).addTo(this.#map);
+
+    markers.push(workoutMarkers);
+
+    // const headingDistance = document
+    //   .querySelectorAll('.leaflet-routing-container')
+    //   .forEach(container => {
+    //     console.log(container.querySelector('.leaflet-routing-alt '));
+    //   });
+
+    // console.log(headingDistance);
+    // document.querySelector('h3');
   }
 }
 

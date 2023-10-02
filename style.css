@@ -461,3 +461,61 @@ a:visited {
   margin-bottom: 0.6rem;
   align-items: center;
 }
+
+.start__finish {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20%;
+  background-color: #fff;
+  padding: 30px 50px;
+  border-radius: 5px;
+  height: 40px;
+  width: 400px;
+  max-width: 100%;
+  font-size: 1.1rem;
+  color: var(--color-dark--1);
+  text-transform: uppercase;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 7px 4px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: all 0.5s, transform 1ms;
+}
+
+.starter {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20%;
+  background-color: #fff;
+  padding: 30px 50px;
+  border-radius: 5px;
+  height: 40px;
+  width: 400px;
+  max-width: 100%;
+  font-size: 1.1rem;
+  color: var(--color-dark--1);
+  text-transform: uppercase;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 7px 4px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transition: all 0.5s, transform 1ms;
+}
+
+.leaflet-control-zoom {
+  top: 100px;
+}
