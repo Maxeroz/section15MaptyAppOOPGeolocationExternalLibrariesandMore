@@ -88,8 +88,11 @@ const btnShowAll = document.querySelector('.btnShowAll');
 const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
 const btnCloseModal = document.querySelector('.close');
+
+let route;
 const markers = [];
 const distance = '';
+
 const starterModal = document.querySelector('.starter');
 
 let workoutObj;
@@ -146,6 +149,8 @@ class App {
   }
 
   _loadMap(position) {
+    //Loading the map
+
     const { latitude, longitude } = position.coords;
     // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
@@ -174,11 +179,15 @@ class App {
   _showForm(mapE) {
     // Choosing coords for START and FINISH
 
+    // Hide STARTER modal
+    starterModal.classList.add('starter-hidden');
+
     // Adding START coords for workout
     if (clicksOnMap === 0) {
       this.#mapEvent = mapE;
 
       // Render modal START FINISH points
+
       modalStartFinish.style.opacity = 1;
       modalStartFinish.textContent = "You've just chosen starting point";
 
@@ -188,10 +197,13 @@ class App {
 
     // Adding FINISH coords for workout
     else if (clicksOnMap === 1) {
+      modalStartFinish.style.opacity = 0;
+      modalStartFinish.style.opacity = 1;
       modalStartFinish.textContent = "You've just chosen finishing point";
       this.#mapEventFinish = mapE;
       clicksOnMap = 0;
 
+      starterModal.classList.remove('starter-hidden');
       form.classList.remove('hidden');
       inputDistance.focus();
     }
@@ -208,6 +220,10 @@ class App {
     form.style.display = 'none';
     form.classList.add('hidden');
     setTimeout(() => (form.style.display = 'grid'), 1000);
+
+    // Render starting modal window
+    starterModal.classList.add('starter-hidden');
+    this._renderStartedModal();
   }
 
   _toggleElevationField() {
@@ -327,7 +343,7 @@ class App {
 
         <div class="dropdown">
             <select name="ability" class="options select__input">
-              <option selected>Choose Option</option>
+              <option selected value="choose--option">Choose Option</option>
               <option value="workout--edit">Edit</option>
               <option value="workout--delete">Delete</option>
               
@@ -487,11 +503,14 @@ class App {
     // Checking option value = EDIT WORKOUT
     if (opt.value === 'workout--edit') {
       console.log('Edit');
-      // workoutId = opt.closest('.workout').dataset.id;
-      // workoutObj = workouts.find(work => work.id === workoutId);
-      // console.log('Edit');
-      console.log(workoutObj);
-      // .setAttribute('contenteditable', 'true');
+
+      // Rendering edit text for STARTER modal
+      starterModal.classList.add('starter-hidden');
+
+      setTimeout(function () {
+        starterModal.classList.remove('starter-hidden');
+        starterModal.textContent = 'Edit chosen workout';
+      }, 50);
 
       // EDIT WORKOUT FEATURE
       const editValueArray = opt
@@ -509,14 +528,6 @@ class App {
           // if (e.keyCode == 13) e.preventDefault();
         }
       });
-      // editValueArray.forEach(opt =>
-      //   opt.addEventListener('keydown', function (e) {
-      //     // console.log(e.target);
-      //     if (e.keyCode == 13) return;
-      //   })
-      // );
-
-      // const btnSave = opt.closest('.workout').querySelector('.btnSave');
 
       btnSave.addEventListener('click', this._editUIandLocalStorage.bind(this));
     }
@@ -525,6 +536,23 @@ class App {
     if (opt.value === 'workout--delete') {
       btnSave.textContent = 'Accept';
       btnSave.addEventListener('click', this._deleteWorkout.bind(this));
+
+      // Rendering delete text for STARTER modal
+      starterModal.classList.add('starter-hidden');
+
+      setTimeout(function () {
+        starterModal.classList.remove('starter-hidden');
+        starterModal.textContent = 'Delete chosen workout';
+      }, 50);
+    }
+    // Back to choosing options
+    starterModal.classList.add('starter-hidden');
+
+    if (opt.value === 'choose--option') {
+      setTimeout(function () {
+        starterModal.classList.remove('starter-hidden');
+        starterModal.textContent = 'Choose starting point for one more workout';
+      }, 50);
     }
   }
 
@@ -598,7 +626,14 @@ class App {
     this.#workouts.splice(index, 1);
 
     // Delete marker from map
-    this.#map.removeLayer(markers[index]);
+    const startAndFinishMarkers = markers[index];
+
+    // Delete route from map
+    route.remove();
+
+    for (let i = 0; i < startAndFinishMarkers.length; i++) {
+      this.#map.removeLayer(startAndFinishMarkers[i]);
+    }
 
     // Delete workout from the list
     e.target.closest('.workout').classList.add('select__hidden');
@@ -606,13 +641,21 @@ class App {
 
     // Check if workouts more than 1, then render or remove input sort
     this._sortCheck();
-    // console.log('Delete');
+
+    // Back starter to default
+    starterModal.classList.add('starter-hidden');
+
+    setTimeout(function () {
+      starterModal.classList.remove('starter-hidden');
+      starterModal.textContent = 'Choose your starting point';
+    }, 450);
   }
 
   _deleteAllWorkouts(e) {
     // Render confirmation modal with overlay
     modalOverlay.classList.add('show');
     modalConfirm.classList.add('show');
+    starterModal.classList.add('starter-hidden');
 
     const deleteAll = function () {
       console.log('Delete All');
@@ -620,7 +663,7 @@ class App {
       sortInput.classList.add('sort__hidden');
       // Empty array with workouts
       this.#workouts = [];
-      // Deleting workouts from the sidebar
+      // Deleting workouts from the sidebar :
 
       // Add display "none" style to current workouts
       const workoutEl = document.querySelectorAll('.workout');
@@ -763,7 +806,7 @@ class App {
     const workoutMarkers = [];
     // console.log(latStart, latFinish);
 
-    L.Routing.control({
+    route = L.Routing.control({
       waypoints: [L.latLng(latStart, lngStart), L.latLng(latFinish, lngFinish)],
       createMarker: function (i, start, n) {
         let marker_icon = null;
@@ -775,7 +818,7 @@ class App {
         }
 
         let marker = L.marker(start.latLng, {
-          draggable: true,
+          draggable: false,
           bounceOnAdd: false,
           bounceOnAddOptions: {
             duration: 1000,
@@ -806,8 +849,22 @@ class App {
   }
 
   _renderStartedModal() {
+    // Function to change state of STARTER modal
+    const changeStarterState = function (state) {
+      if (state === 'oneMore') {
+        starterModal.classList.add('starter-hidden');
+        starterModal.textContent = 'Choose starting point for one more workout';
+        starterModal.classList.remove('starter-hidden');
+      }
+    };
+
+    const workouts = this.#workouts;
+
     setTimeout(function () {
       starterModal.classList.remove('starter-hidden');
+      if (workouts.length >= 1) {
+        changeStarterState('oneMore');
+      }
     }, 400);
   }
 }
@@ -815,3 +872,14 @@ class App {
 const app = new App();
 
 ////////////////////////////////////////////////
+
+const arr = [
+  [1, 2],
+  [3, 4],
+];
+
+console.log(arr);
+
+for (let i = 0; i < arr.length; i++) {
+  console.log(arr.flat());
+}
