@@ -67,6 +67,9 @@ a:visited {
 }
 
 .dropdown {
+  display: flex;
+  justify-content: start;
+  gap: 12px;
   background-color: var(--color-dark--2);
   border-radius: 5px;
   /* padding: 1.5rem 2.25rem; */
@@ -81,7 +84,7 @@ a:visited {
   padding: 1.5rem 2.25rem;
   margin-bottom: 1.75rem;
   cursor: pointer;
-
+  pointer-events: auto;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 0.75rem 1.5rem;
@@ -136,11 +139,7 @@ a:visited {
   padding: 0 2.25rem;
   margin-bottom: 0;
   opacity: 0;
-}
-
-.sort {
-  display: grid;
-  /* transition: all 0.5s, transform 1ms; */
+  pointer-events: none;
 }
 
 .input__sort {
@@ -160,7 +159,6 @@ a:visited {
 }
 
 .input__label {
-  flex: 0 0 40%;
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -189,8 +187,7 @@ a:visited {
 }
 
 .btnDeleteAll {
-  width: 25%;
-  padding: 0.3rem 1.1rem;
+  padding: 0.7rem;
   font-family: inherit;
   font-size: 1.4rem;
   border: none;
@@ -330,6 +327,10 @@ a:visited {
   border-left: 5px solid var(--color-brand--1);
 }
 
+.leaflet-popup-close-button {
+  display: none;
+}
+
 .modal__overlay {
   z-index: 1;
   background-color: rgba(0, 0, 0, 0.3);
@@ -401,9 +402,15 @@ a:visited {
   border-radius: 3px;
   background-color: var(--color-light--3);
   margin-top: 0.9rem;
+  cursor: pointer;
 }
 
-.close:hover {
+.accept:hover {
+  background-color: var(--color-light--2);
+  transition: background-color 0.3s;
+}
+
+.close:over {
   background-color: var(--color-light--1);
   transition: background-color 0.3s;
 }
@@ -445,4 +452,12 @@ a:visited {
 
 .leaflet-routing-alternatives-container {
   color: var(--color-dark--1);
+}
+
+.sort__inputs {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 10px;
+  margin-bottom: 0.6rem;
+  align-items: center;
 }

@@ -79,6 +79,8 @@ const modal = document.querySelector('.modal');
 const modalConfirm = document.querySelector('.confirm__delete__all');
 const btnAccept = document.querySelector('.accept');
 
+const sideBar = document.querySelector('.sidebar');
+
 const btnShowAll = document.querySelector('.btnShowAll');
 const sortInput = document.querySelector('.sort');
 const btnDeleteAll = document.querySelector('.btnDeleteAll');
@@ -153,7 +155,7 @@ class App {
 
     this.#workouts.forEach(work => this._rederWorkoutMarker(work));
 
-    // this._routingControl();
+    this._routingControl();
   }
 
   _showForm(mapE) {
@@ -568,6 +570,11 @@ class App {
       // Empty array with workouts
       this.#workouts = [];
       // Deleting workouts from the sidebar
+
+      // Add display "none" style to current workouts
+      const workoutEl = document.querySelectorAll('.workout');
+      workoutEl.forEach(work => (work.style.display = 'none'));
+
       const allWorkouts = e.target
         .closest('.workouts')
         .querySelectorAll('.workout');
@@ -673,13 +680,6 @@ class App {
     this.#map.fitBounds(group.getBounds());
   }
 
-  _routingControl() {
-    L.Routing.control({
-      waypoints: [L.latLng(57.74, 11.94), L.latLng(57.6792, 11.949)],
-    }).addTo(this.#map);
-    console.log(this.#map);
-  }
-
   _chooseIcon(point) {
     // Choosing icon for both START AND FINISH POINTS
     const icon = L.icon({
@@ -687,10 +687,59 @@ class App {
 
       iconSize: [32, 32], // size of the icon
       iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
-      popupAnchor: [0, -26], // point from which the popup should open relative to the iconAnchor
+      popupAnchor: [0, -25], // point from which the popup should open relative to the iconAnchor
     });
     return icon;
+  }
+
+  _routingControl() {
+    // Creating icons for both points START end FINISH
+    const createIcon = function (point) {
+      const icon = L.icon({
+        iconUrl: `${point}.png`,
+
+        iconSize: [32, 32], // size of the icon
+        iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
+        popupAnchor: [0, -25], // point from which the popup should open relative to the iconAnchor
+      });
+      return icon;
+    };
+
+    if (this.#workouts.length === 0) return;
+
+    const [latStart, lngStart] = this.#workouts[0].coords;
+    const [latFinish, lngFinish] = this.#workouts[1].coords;
+    // console.log(latStart, latFinish);
+
+    L.Routing.control({
+      waypoints: [L.latLng(latStart, lngStart), L.latLng(latFinish, lngFinish)],
+      createMarker: function (i, start, n) {
+        let marker_icon = null;
+        if (i === 0) {
+          // The first marker = START
+          marker_icon = createIcon('start');
+        } else if (i == n - 1) {
+          marker_icon = createIcon('finish');
+        }
+
+        let marker = L.marker(start.latLng, {
+          draggable: true,
+          bounceOnAdd: false,
+          bounceOnAddOptions: {
+            duration: 1000,
+            height: 800,
+            function() {
+              bindPopup(myPopup).openOn(map);
+            },
+          },
+          icon: marker_icon,
+        });
+        return marker;
+      },
+    }).addTo(this.#map);
   }
 }
 
 const app = new App();
+
+////////////////////////////////////////////////
