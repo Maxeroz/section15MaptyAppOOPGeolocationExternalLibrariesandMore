@@ -83,6 +83,7 @@ const btnAccept = document.querySelector('.accept');
 
 const sideBar = document.querySelector('.sidebar');
 const modalStartFinish = document.querySelector('.start__finish');
+const modalInputsCheck = document.querySelector('.inputs__check');
 
 const btnShowAll = document.querySelector('.btnShowAll');
 const sortInput = document.querySelector('.sort');
@@ -167,6 +168,7 @@ class App {
 
     // Handling clicks on map
     ///////////////////////////////////////////////////////////////////
+
     this.#map.on('click', this._showForm.bind(this));
     ///////////////////////////////////////////////////////////////////
 
@@ -179,6 +181,9 @@ class App {
   _showForm(mapE) {
     // Choosing coords for START and FINISH
 
+    // Checking if form is alive, if yes : prevent clicks on the map
+    if (form.classList.contains('show-form')) return;
+
     // Hide STARTER modal
     starterModal.classList.add('starter-hidden');
 
@@ -188,7 +193,7 @@ class App {
 
       // Render modal START FINISH points
 
-      modalStartFinish.style.opacity = 1;
+      modalStartFinish.style.opacity = 0.9;
       modalStartFinish.textContent = "You've just chosen starting point";
 
       clicksOnMap = 1;
@@ -198,14 +203,18 @@ class App {
     // Adding FINISH coords for workout
     else if (clicksOnMap === 1) {
       modalStartFinish.style.opacity = 0;
-      modalStartFinish.style.opacity = 1;
+      modalStartFinish.style.opacity = 0.9;
       modalStartFinish.textContent = "You've just chosen finishing point";
       this.#mapEventFinish = mapE;
+
       clicksOnMap = 0;
 
-      starterModal.classList.remove('starter-hidden');
+      starterModal.classList.add('starter-hidden');
       form.classList.remove('hidden');
       inputDistance.focus();
+
+      // Adding class to form, for preventing clicks while form is alive
+      form.classList.add('show-form');
     }
   }
 
@@ -257,8 +266,14 @@ class App {
         // !Number.isFinite(cadence)
         !validInputs(distance, duration, cadence) ||
         !allPositive(distance, duration, cadence)
-      )
-        return alert('Inputs have to be positive numbers!');
+      ) {
+        modalStartFinish.style.opacity = 0;
+        starterModal.classList.add('starter-hidden');
+        modalInputsCheck.classList.add('inputs__check__show');
+        return;
+      }
+
+      // return alert('Inputs have to be positive numbers!');
 
       workout = new Running(
         [lat, lng],
@@ -276,8 +291,12 @@ class App {
       if (
         !validInputs(distance, duration, elevation) ||
         !allPositive(distance, duration)
-      )
-        return alert('Inputs have to be positive numbers!');
+      ) {
+        modalStartFinish.style.opacity = 0;
+        starterModal.classList.add('starter-hidden');
+        modalInputsCheck.classList.add('inputs__check__show');
+        return;
+      }
 
       workout = new Cylcing(
         [lat, lng],
@@ -312,6 +331,12 @@ class App {
 
     // Render sorting form from the side bar
     this._sortCheck();
+
+    // Render STARTER modal
+    modalInputsCheck.classList.remove('inputs__check__show');
+
+    // Removing class to form, for allowing clicks while form is gone
+    form.classList.remove('show-form');
   }
 
   _rederWorkoutMarker(workout) {
@@ -802,7 +827,7 @@ class App {
 
   _showAllWorkouts() {
     // Position view to show all workouts on the map
-    const group = new L.featureGroup(markers);
+    const group = new L.featureGroup(markers.flat());
     this.#map.fitBounds(group.getBounds());
   }
 
@@ -930,3 +955,13 @@ class App {
 }
 
 const app = new App();
+
+// Features:
+
+// 1) Ability to edit a workout
+// 2) Ability to delete a workout
+// 3) Ability to delete all workouts
+// 4) Ability to sort workouts by a certain field (e.g distance)
+// 5) Re-build Running and Cylcing objects from Local Storage
+// 6) More realistic error and confirmation messages
+// 7) Ability to draw lines and shaped instead of just points

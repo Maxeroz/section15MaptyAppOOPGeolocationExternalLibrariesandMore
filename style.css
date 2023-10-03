@@ -396,6 +396,11 @@ a:visited {
   margin-top: 0.9rem;
 }
 
+.close:hover {
+  background-color: var(--color-light--2);
+  transition: background-color 0.3s;
+}
+
 .accept {
   width: 38%;
   padding: 1rem 1.8rem;
@@ -486,6 +491,37 @@ a:visited {
   align-items: center;
 }
 
+.inputs__check {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20%;
+  background-color: #fff;
+  padding: 30px 50px;
+  border-radius: 5px;
+  height: 40px;
+  width: 400px;
+  max-width: 100%;
+  font-size: 1.1rem;
+  color: var(--color-dark--1);
+  text-transform: uppercase;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 7px 4px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: all 0.5s, transform 1ms;
+}
+
+.inputs__check__show {
+  opacity: 0.9;
+}
+
 .start__finish {
   position: absolute;
   display: flex;
@@ -538,6 +574,7 @@ a:visited {
   box-shadow: 0 7px 4px rgba(0, 0, 0, 0.3);
   opacity: 0.9;
   transition: all 0.3s, transform 1ms;
+  backdrop-filter: blur(10px);
 }
 
 .leaflet-control-zoom {
@@ -555,4 +592,8 @@ a:visited {
 .sorting__hidden {
   display: none;
   transition: all 0.2s, transform 1ms;
+}
+
+.leaflet-pane.leaflet-popup-pane {
+  opacity: 0.93;
 }
