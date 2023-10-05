@@ -861,6 +861,8 @@ class App {
     const [latStart, lngStart] = workout.coords;
     const [latFinish, lngFinish] = workout.coordsFinish;
     const workoutMarkers = [];
+
+    const containerDistance = 0;
     // console.log(latStart, latFinish);
     const startAndFinishMarkers = [];
 
@@ -918,19 +920,19 @@ class App {
       }
     });
 
+    // Parsing distance from Leaflet container
+    const containerEl = document.querySelector('.leaflet-routing-container');
+
+    setTimeout(() => {
+      let [distance] = containerEl.querySelector('h3').textContent.split(' ');
+      distance = +(distance / 1000).toFixed(1);
+      console.log(distance);
+    }, 500);
+
     console.log(route);
     routes.push(route);
 
     markers.push(workoutMarkers);
-
-    // const headingDistance = document
-    //   .querySelectorAll('.leaflet-routing-container')
-    //   .forEach(container => {
-    //     console.log(container.querySelector('.leaflet-routing-alt '));
-    //   });
-
-    // console.log(headingDistance);
-    // document.querySelector('h3');
   }
 
   _renderStartedModal() {
@@ -965,3 +967,6 @@ const app = new App();
 // 5) Re-build Running and Cylcing objects from Local Storage
 // 6) More realistic error and confirmation messages
 // 7) Ability to draw lines and shaped instead of just points
+
+const str = '470.4 m, 60 s';
+console.log(str.split(' '));
