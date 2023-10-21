@@ -6,8 +6,8 @@ class Workout {
   clicks = 0;
 
   constructor(coords, coordsFinish, distance, duration) {
-    this.coords = coords; // [lan, lng]
-    this.coordsFinish = coordsFinish;
+    this.coords = coords; // [lat, lng]
+    this.coordsFinish = coordsFinish; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
   }
@@ -75,6 +75,9 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
+// Array for parsed distances
+let distanceArray = [];
+
 const modalOverlay = document.querySelector('.modal__overlay');
 const modal = document.querySelector('.modal');
 
@@ -93,6 +96,11 @@ const btnCloseModal = document.querySelector('.close');
 let routes = [];
 const markers = [];
 const distance = '';
+
+// Weather API
+
+let currentLat = 51.23;
+let currentLng = -46.87;
 
 const starterModal = document.querySelector('.starter');
 
@@ -117,6 +125,8 @@ class App {
 
     // Get data from local storage
     this._getLocalStorage();
+
+    this._fetchWeather();
 
     // Ability to sort
     this._eventSortBtn();
@@ -172,10 +182,10 @@ class App {
     this.#map.on('click', this._showForm.bind(this));
     ///////////////////////////////////////////////////////////////////
 
+    this.#workouts.forEach(work => this._getDistance(work));
+
     // this.#workouts.forEach(work => this._rederWorkoutMarker(work));
     this.#workouts.forEach(work => this._routingControl(work));
-
-    // this._routingControl();
   }
 
   _showForm(mapE) {
@@ -192,7 +202,6 @@ class App {
       this.#mapEvent = mapE;
 
       // Render modal START FINISH points
-
       modalStartFinish.style.opacity = 0.9;
       modalStartFinish.textContent = "You've just chosen starting point";
 
@@ -215,6 +224,19 @@ class App {
 
       // Adding class to form, for preventing clicks while form is alive
       form.classList.add('show-form');
+
+      // Calc linear distance between two points
+
+      // Define first point coords for calcDistance
+      const firstPoint = this.#mapEvent.latlng;
+      // console.log(firstPoint);
+
+      // Define sect point coords for calcDistance
+      const seconPoint = this.#mapEventFinish.latlng;
+      // console.log(seconPoint);
+
+      const caclDistance = this.#map.distance(firstPoint, seconPoint);
+      console.log(caclDistance);
     }
   }
 
@@ -249,12 +271,15 @@ class App {
 
     // Get data from from
     const type = inputType.value;
-    const distance = +inputDistance.value;
+    // const distance = +inputDistance.value;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
 
     let workout;
+
+    currentLat = lat;
+    currentLng = lng;
 
     // If workout running, create running object
     if (type === 'running') {
@@ -315,7 +340,10 @@ class App {
     this._routingControl(workout);
 
     // Render workout on list
-    this._renderWorkout(workout);
+
+    setTimeout(() => {
+      this._renderWorkout(workout);
+    }, 100);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -843,6 +871,17 @@ class App {
     return icon;
   }
 
+  // Method to get distance between to points of route
+  _getDistance(workout) {
+    const [latStart, lngStart] = workout.coords;
+    const [latFinish, lngFinish] = workout.coordsFinish;
+
+    const route = new L.Routing.control({
+      waypoints: [L.latLng(latStart, lngStart), L.latLng(latFinish, lngFinish)],
+    });
+    console.log(route);
+  }
+
   _routingControl(workout) {
     // Creating icons for both points START end FINISH
     const createIcon = function (point) {
@@ -862,7 +901,6 @@ class App {
     const [latFinish, lngFinish] = workout.coordsFinish;
     const workoutMarkers = [];
 
-    const containerDistance = 0;
     // console.log(latStart, latFinish);
     const startAndFinishMarkers = [];
 
@@ -897,7 +935,7 @@ class App {
       },
     }).addTo(this.#map);
 
-    console.log(startAndFinishMarkers);
+    // console.log(startAndFinishMarkers);
 
     startAndFinishMarkers.forEach((marker, i) => {
       if (i === 0) {
@@ -919,17 +957,34 @@ class App {
           .openPopup();
       }
     });
-
+    // ----------------------------------------------
     // Parsing distance from Leaflet container
-    const containerEl = document.querySelector('.leaflet-routing-container');
+    const containerEls = document.querySelectorAll(
+      '.leaflet-routing-container'
+    );
+    console.log(containerEls);
 
-    setTimeout(() => {
-      let [distance] = containerEl.querySelector('h3').textContent.split(' ');
-      distance = +(distance / 1000).toFixed(1);
-      console.log(distance);
-    }, 500);
+    const parseNumber = function () {
+      // Set Array with distance to empty array, every time when new workout is added
+      distanceArray = [];
 
-    console.log(route);
+      // Push distances to array
+      setTimeout(() => {
+        containerEls.forEach(el => {
+          let [parsedNumber] = el.querySelector('h3').textContent.split(' ');
+          parsedNumber = +(parsedNumber / 1000).toFixed(1);
+
+          distanceArray.push(parsedNumber);
+        });
+
+        console.log(distanceArray);
+      }, 100);
+    };
+    parseNumber();
+
+    // ----------------------------------------------
+
+    // console.log(route);
     routes.push(route);
 
     markers.push(workoutMarkers);
@@ -952,7 +1007,21 @@ class App {
       if (workouts.length >= 1) {
         changeStarterState('oneMore');
       }
-    }, 400);
+    }, 700);
+  }
+
+  _fetchWeather(e) {
+    // Values to fetch the weather from API
+
+    const key = '7eaddd5030098bcde08fa975d9c69594';
+    const lang = 'en';
+    const units = 'metric';
+    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${currentLat}}&lon=${currentLng}&appid=${key}`;
+
+    // (async function () {
+    //   const resp = await fetch(url);
+    //   console.log(resp);
+    // })();
   }
 }
 
@@ -967,6 +1036,3 @@ const app = new App();
 // 5) Re-build Running and Cylcing objects from Local Storage
 // 6) More realistic error and confirmation messages
 // 7) Ability to draw lines and shaped instead of just points
-
-const str = '470.4 m, 60 s';
-console.log(str.split(' '));
