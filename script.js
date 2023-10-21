@@ -32,7 +32,7 @@ class Running extends Workout {
   constructor(coords, coordsFinish, distance, duration, cadence) {
     super(coords, coordsFinish, distance, duration);
     this.cadence = cadence;
-    this.calcPace();
+    // this.calcPace();
     this._setDescription();
   }
 
@@ -96,6 +96,7 @@ const btnCloseModal = document.querySelector('.close');
 let routes = [];
 const markers = [];
 const distance = '';
+let parsedNumber, unitsParsed;
 
 // Weather API
 
@@ -220,7 +221,8 @@ class App {
 
       starterModal.classList.add('starter-hidden');
       form.classList.remove('hidden');
-      inputDistance.focus();
+      // inputDistance.focus();
+      inputDuration.focus();
 
       // Adding class to form, for preventing clicks while form is alive
       form.classList.add('show-form');
@@ -242,11 +244,8 @@ class App {
 
   _hideForm() {
     // Empty inputs
-    inputDistance.value =
-      inputDuration.value =
-      inputCadence.value =
-      inputElevation.value =
-        '';
+    // inputDistance.value =
+    inputDuration.value = inputCadence.value = inputElevation.value = '';
 
     form.style.display = 'none';
     form.classList.add('hidden');
@@ -271,7 +270,7 @@ class App {
 
     // Get data from from
     const type = inputType.value;
-    // const distance = +inputDistance.value;
+    const distance = 0;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
@@ -289,8 +288,8 @@ class App {
         // !Number.isFinite(distance) ||
         // !Number.isFinite(duration) ||
         // !Number.isFinite(cadence)
-        !validInputs(distance, duration, cadence) ||
-        !allPositive(distance, duration, cadence)
+        !validInputs(duration, cadence) ||
+        !allPositive(duration, cadence)
       ) {
         modalStartFinish.style.opacity = 0;
         starterModal.classList.add('starter-hidden');
@@ -313,10 +312,7 @@ class App {
     if (type === 'cycling') {
       const elevation = +inputElevation.value;
 
-      if (
-        !validInputs(distance, duration, elevation) ||
-        !allPositive(distance, duration)
-      ) {
+      if (!validInputs(duration, elevation) || !allPositive(duration)) {
         modalStartFinish.style.opacity = 0;
         starterModal.classList.add('starter-hidden');
         modalInputsCheck.classList.add('inputs__check__show');
@@ -342,8 +338,12 @@ class App {
     // Render workout on list
 
     setTimeout(() => {
+      workout.distance = parsedNumber;
+      console.log(workout);
+      workout.calcPace();
+
       this._renderWorkout(workout);
-    }, 100);
+    }, 300);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -352,7 +352,10 @@ class App {
     modalStartFinish.style.opacity = 0;
 
     // Set local storage to all workouts
-    this._setLocalStorage();
+
+    setTimeout(() => {
+      this._setLocalStorage();
+    }, 310);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
@@ -684,6 +687,10 @@ class App {
   _deleteWorkout(e) {
     const workouts = this.#workouts;
 
+    // Empty distance array
+
+    distanceArray = [];
+
     // Delete workout from array
     const index = this.#workouts.findIndex(work => work.id === workoutObj.id);
     this.#workouts.splice(index, 1);
@@ -756,6 +763,8 @@ class App {
         // this.#map.removeLayer(markers[i]);
       }
       routes = [];
+
+      distanceArray = [];
 
       modalOverlay.classList.remove('show');
       modalConfirm.classList.remove('show');
@@ -957,7 +966,7 @@ class App {
           .openPopup();
       }
     });
-    // ----------------------------------------------
+
     // Parsing distance from Leaflet container
     const containerEls = document.querySelectorAll(
       '.leaflet-routing-container'
@@ -966,25 +975,31 @@ class App {
 
     const parseNumber = function () {
       // Set Array with distance to empty array, every time when new workout is added
-      distanceArray = [];
+      // distanceArray = [];
 
       // Push distances to array
       setTimeout(() => {
         containerEls.forEach(el => {
-          let [parsedNumber] = el.querySelector('h3').textContent.split(' ');
-          parsedNumber = +(parsedNumber / 1000).toFixed(1);
+          [parsedNumber, unitsParsed] = el
+            .querySelector('h3')
+            .textContent.split(' ');
 
-          distanceArray.push(parsedNumber);
+          let units = unitsParsed.slice(0, -1);
+          console.log(units);
+
+          if (units === 'm') {
+            parsedNumber = +(parsedNumber / 1000).toFixed(1);
+          }
+
+          // distanceArray.push(parsedNumber);
         });
 
-        console.log(distanceArray);
+        console.log(parsedNumber);
       }, 100);
     };
     parseNumber();
 
-    // ----------------------------------------------
-
-    // console.log(route);
+    console.log(route);
     routes.push(route);
 
     markers.push(workoutMarkers);
@@ -1016,7 +1031,7 @@ class App {
     const key = '7eaddd5030098bcde08fa975d9c69594';
     const lang = 'en';
     const units = 'metric';
-    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${currentLat}}&lon=${currentLng}&appid=${key}`;
+    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${currentLat}}&lon=${currentLng}&exclude={part}&appid=${key}`;
 
     // (async function () {
     //   const resp = await fetch(url);
