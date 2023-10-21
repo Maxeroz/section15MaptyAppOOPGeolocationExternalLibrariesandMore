@@ -354,6 +354,7 @@ class App {
     // Set local storage to all workouts
 
     setTimeout(() => {
+      this._workoutOptions();
       this._setLocalStorage();
     }, 310);
 
@@ -556,10 +557,13 @@ class App {
     const opt = target;
 
     const btnSave = opt.closest('.workout').querySelector('.btnSave');
+    console.log(btnSave);
     // console.log(opt);
     // console.log(this);
     workoutId = opt.closest('.workout').dataset.id;
     workoutObj = workouts.find(work => work.id === workoutId);
+
+    console.log(workoutObj);
 
     // Checking option value = EDIT WORKOUT
     if (opt.value === 'workout--edit') {
@@ -977,26 +981,49 @@ class App {
       // Set Array with distance to empty array, every time when new workout is added
       // distanceArray = [];
 
-      // Push distances to array
+      // Parse number from Leaflet container
       setTimeout(() => {
-        containerEls.forEach(el => {
-          [parsedNumber, unitsParsed] = el
-            .querySelector('h3')
-            .textContent.split(' ');
+        // containerEls.forEach(el => {
+        //   [parsedNumber, unitsParsed] = el
+        //     .querySelector('h3')
+        //     .textContent.split(' ');
 
-          let units = unitsParsed.slice(0, -1);
-          console.log(units);
+        // const waitForDistance = function () {
+        //   return new Promise(resolve => {
+        //     let currentEl = Array.from(containerEls).slice(-1);
+        //     console.log(currentEl);
 
-          if (units === 'm') {
-            parsedNumber = +(parsedNumber / 1000).toFixed(1);
-          }
+        //     let data = currentEl[0].querySelector('h3').textContent.split(' ');
+        //     const response = resolve(data);
+        //     console.log(response);
+        //   });
+        // };
 
-          // distanceArray.push(parsedNumber);
-        });
+        // let data = waitForDistance().then(res => {
+        //   console.log(res);
+        // });
 
+        let currentEl = Array.from(containerEls).slice(-1);
+        console.log(currentEl);
+
+        console.log(currentEl[0]);
+
+        [parsedNumber, unitsParsed] = currentEl[0]
+          .querySelector('h3')
+          .textContent.split(' ');
+
+        let units = unitsParsed.slice(0, -1);
+
+        if (units === 'm') {
+          parsedNumber = +(parsedNumber / 1000).toFixed(1);
+        }
+
+        // distanceArray.push(parsedNumber);
         console.log(parsedNumber);
-      }, 100);
+      }, 300);
     };
+    console.log(containerEls);
+    if (containerEls.length === routes.length) return;
     parseNumber();
 
     console.log(route);
