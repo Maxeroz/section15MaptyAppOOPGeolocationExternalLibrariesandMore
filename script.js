@@ -342,8 +342,10 @@ class App {
       console.log(workout);
       workout.calcPace();
 
+      this._setLocalStorage();
+
       this._renderWorkout(workout);
-    }, 300);
+    }, 420);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -355,8 +357,8 @@ class App {
 
     setTimeout(() => {
       this._workoutOptions();
-      this._setLocalStorage();
-    }, 310);
+      console.log(workout);
+    }, 430);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
@@ -1020,7 +1022,7 @@ class App {
 
         // distanceArray.push(parsedNumber);
         console.log(parsedNumber);
-      }, 300);
+      }, 400);
     };
     console.log(containerEls);
     if (containerEls.length === routes.length) return;
