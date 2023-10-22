@@ -108,6 +108,29 @@ a:visited {
   align-items: baseline;
 }
 
+.weather__detail {
+  display: flex;
+  align-items: baseline;
+}
+
+.weather__icon {
+  font-size: 1.8rem;
+  margin-right: 0.2rem;
+  height: 0.28rem;
+}
+
+.weather__value {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.weather__unit {
+  font-size: 1.1rem;
+  color: var(--color-light--1);
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
 .workout__icon {
   font-size: 1.8rem;
   margin-right: 0.2rem;

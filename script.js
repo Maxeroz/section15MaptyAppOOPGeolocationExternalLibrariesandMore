@@ -5,11 +5,12 @@ class Workout {
   id = (Date.now() + '').slice(-10);
   clicks = 0;
 
-  constructor(coords, coordsFinish, distance, duration) {
+  constructor(coords, coordsFinish, distance, duration, weatherIcon) {
     this.coords = coords; // [lat, lng]
     this.coordsFinish = coordsFinish; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
+    this.weatherIcon = weatherIcon; // img
   }
 
   _setDescription() {
@@ -29,8 +30,8 @@ class Workout {
 class Running extends Workout {
   type = 'running';
 
-  constructor(coords, coordsFinish, distance, duration, cadence) {
-    super(coords, coordsFinish, distance, duration);
+  constructor(coords, coordsFinish, distance, duration, weatherIcon, cadence) {
+    super(coords, coordsFinish, distance, duration, weatherIcon);
     this.cadence = cadence;
     // this.calcPace();
     this._setDescription();
@@ -47,7 +48,7 @@ class Cylcing extends Workout {
   type = 'cycling';
 
   constructor(coords, coordsFinish, distance, duration, elevationGain) {
-    super(coords, coordsFinish, distance, duration);
+    super(coords, coordsFinish, distance, duration, weatherIcon);
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
@@ -98,10 +99,16 @@ const markers = [];
 const distance = '';
 let parsedNumber, unitsParsed;
 
+let currentLocation;
+
 // Weather API
 
-let currentLat = 51.23;
-let currentLng = -46.87;
+const weatherIconEl = document.querySelector('.weather__icon');
+
+let imageWeather;
+let weatherObj;
+const currentLat = 52.23;
+const currentLng = -41.87;
 
 const starterModal = document.querySelector('.starter');
 
@@ -126,8 +133,6 @@ class App {
 
     // Get data from local storage
     this._getLocalStorage();
-
-    this._fetchWeather();
 
     // Ability to sort
     this._eventSortBtn();
@@ -161,9 +166,13 @@ class App {
   }
 
   _loadMap(position) {
-    //Loading the map
+    // Loading the map
 
     const { latitude, longitude } = position.coords;
+    // currentLat = latitude;
+    // currentLng = longitude;
+
+    this._fetchWeather(latitude, longitude);
     // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
@@ -274,11 +283,9 @@ class App {
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
+    const weatherIcon = weatherIconEl;
 
     let workout;
-
-    currentLat = lat;
-    currentLng = lng;
 
     // If workout running, create running object
     if (type === 'running') {
@@ -304,6 +311,7 @@ class App {
         [latFinish, lngFinish],
         distance,
         duration,
+        weatherIcon,
         cadence
       );
     }
@@ -324,6 +332,7 @@ class App {
         [latFinish, lngFinish],
         distance,
         duration,
+        weatherIcon,
         elevation
       );
     }
@@ -345,7 +354,7 @@ class App {
       this._setLocalStorage();
 
       this._renderWorkout(workout);
-    }, 420);
+    }, 600);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -358,7 +367,7 @@ class App {
     setTimeout(() => {
       this._workoutOptions();
       console.log(workout);
-    }, 430);
+    }, 700);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
@@ -413,7 +422,7 @@ class App {
               
             </select>
           <button class="btnSave">Save</butto>
-          </div>
+        </div>
         
         <div class="workout__details">
           <span class="workout__icon">${
@@ -473,6 +482,12 @@ class App {
     }
 
     form.insertAdjacentHTML('afterend', html);
+
+    // Find right workout
+    const currentWorkout = this.#workouts.find(work => work.id === workout.id);
+    // Add Property weather icon
+    currentWorkout.weatherIcon = imageWeather;
+    console.log(currentWorkout);
   }
 
   _moveToPopup(e) {
@@ -1022,7 +1037,7 @@ class App {
 
         // distanceArray.push(parsedNumber);
         console.log(parsedNumber);
-      }, 400);
+      }, 450);
     };
     console.log(containerEls);
     if (containerEls.length === routes.length) return;
@@ -1054,18 +1069,46 @@ class App {
     }, 700);
   }
 
-  _fetchWeather(e) {
+  _fetchWeather(lat, lng) {
     // Values to fetch the weather from API
 
-    const key = '7eaddd5030098bcde08fa975d9c69594';
-    const lang = 'en';
-    const units = 'metric';
-    const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${currentLat}}&lon=${currentLng}&exclude={part}&appid=${key}`;
+    console.log(lat, lng);
 
-    // (async function () {
-    //   const resp = await fetch(url);
-    //   console.log(resp);
-    // })();
+    const key = '172e636fa0e74e6bb3e205127232210';
+    // const lang = 'en';
+    // const units = 'metric';
+    // const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${currentLat}}&lon=${currentLng}&exclude={part}&appid=${key}`;
+
+    const url = `https://api.weatherapi.com/v1/current.json?key=${key}&q=${currentLocation}&aqi=no`;
+
+    (async function () {
+      try {
+        // const respGeo = await fetch(
+        //   `https://geocode.xyz/${lat},${lng}?geoit=json&auth=715881696036124439037x17745`
+        // );
+        // const data = await respGeo.json();
+        // const city = data.city;
+
+        // console.log(city);
+
+        const weatherResp = await fetch(
+          `https://api.weatherapi.com/v1/current.json?key=${key}&q=${lat},
+          ${lng}&aqi=no`
+        );
+        if (!weatherResp.ok) throw new Error(weatherResp.statusText);
+
+        weatherObj = await weatherResp.json();
+        console.log(weatherObj);
+      } catch (err) {
+        console.error(err.message);
+      }
+
+      imageWeather = document.createElement('img');
+      const imageUrl = weatherObj.current.condition.icon;
+      imageWeather.src = imageUrl;
+
+      // sideBar.append(imageWeather);
+    })();
   }
 }
 
