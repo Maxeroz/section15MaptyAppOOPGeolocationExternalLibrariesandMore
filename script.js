@@ -370,6 +370,8 @@ class App {
     // this._rederWorkoutMarker(workout);
     this._routingControl(workout);
 
+    this._parseNumberMethod();
+
     // Render workout on list
 
     setTimeout(() => {
@@ -1040,59 +1042,10 @@ class App {
       '.leaflet-routing-container'
     );
 
-    const containerPromise = Promise.resolve(containerEls);
-
-    const parseNumber = function () {
-      // Set Array with distance to empty array, every time when new workout is added
-      // distanceArray = [];
-
-      // Parse number from Leaflet container
-      setTimeout(() => {
-        // containerEls.forEach(el => {
-        //   [parsedNumber, unitsParsed] = el
-        //     .querySelector('h3')
-        //     .textContent.split(' ');
-
-        // const waitForDistance = function () {
-        //   return new Promise(resolve => {
-        //     let currentEl = Array.from(containerEls).slice(-1);
-        //     console.log(currentEl);
-
-        //     let data = currentEl[0].querySelector('h3').textContent.split(' ');
-        //     const response = resolve(data);
-        //     console.log(response);
-        //   });
-        // };
-
-        // let data = waitForDistance().then(res => {
-        //   console.log(res);
-        // });
-
-        containerPromise
-          .then(cont => {
-            console.log(cont);
-            let currentEl = Array.from(cont).slice(-1);
-            return currentEl;
-          })
-          .then(el => {
-            console.log(el);
-            [parsedNumber, unitsParsed] = el[0]
-              .querySelector('h3')
-              .textContent.split(' ');
-
-            let units = unitsParsed.slice(0, -1);
-
-            if (units === 'm') {
-              parsedNumber = +(parsedNumber / 1000).toFixed(1);
-            }
-          });
-      }, 800);
-    };
-
     if (containerEls.length === routes.length) return;
-    parseNumber();
+    // parseNumber();
 
-    console.log(route);
+    // console.log(route);
     routes.push(route);
 
     markers.push(workoutMarkers);
@@ -1121,7 +1074,7 @@ class App {
   _fetchWeather(lat, lng) {
     // Values to fetch the weather from API
 
-    console.log(lat, lng);
+    // console.log(lat, lng);
 
     const key = '172e636fa0e74e6bb3e205127232210';
     // const lang = 'en';
@@ -1135,8 +1088,10 @@ class App {
         const respGeo = await fetch(
           `https://geocode.xyz/${lat},${lng}?geoit=json&auth=715881696036124439037x17745`
         );
+
         const data = await respGeo.json();
-        city = data.city;
+        // city = data.city;
+        // console.log(data);
 
         const weatherResp = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=${key}&q=${lat},
@@ -1155,11 +1110,50 @@ class App {
       imageWeather.src = imageUrl;
       tempC = weatherObj.current.temp_c;
       weatherCondition = weatherObj.current.condition.text;
+      city = `${weatherObj.location.name}, ${weatherObj.location.region}, ${weatherObj.location.country}`;
 
       // time = new Date(weatherObj.location.localtime_epoch);
 
       // console.log(time);
     })();
+  }
+
+  _parseNumberMethod() {
+    const containerEls = document.querySelectorAll(
+      '.leaflet-routing-container'
+    );
+
+    console.log(containerEls);
+
+    const containerPromise = Promise.resolve(containerEls);
+
+    const parseNumber = function () {
+      // Set Array with distance to empty array, every time when new workout is added
+      // distanceArray = [];
+
+      // Parse number from Leaflet container
+      setTimeout(() => {
+        containerPromise
+          .then(cont => {
+            console.log(cont);
+            let currentEl = Array.from(cont).slice(-1);
+            return currentEl;
+          })
+          .then(el => {
+            console.log(el);
+            [parsedNumber, unitsParsed] = el[0]
+              .querySelector('h3')
+              .textContent.split(' ');
+
+            let units = unitsParsed.slice(0, -1);
+
+            if (units === 'm') {
+              parsedNumber = +(parsedNumber / 1000).toFixed(1);
+            }
+          });
+      }, 800);
+    };
+    parseNumber();
   }
 }
 
