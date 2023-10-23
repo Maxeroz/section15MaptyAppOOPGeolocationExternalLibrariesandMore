@@ -110,9 +110,6 @@ let currentLocation;
 
 // Weather API
 
-// const weatherIconEl = document.querySelector('.weather__icon');
-
-let time;
 let city;
 let weatherCondition;
 let tempC;
@@ -282,6 +279,15 @@ class App {
   }
 
   _newWorkout(e) {
+    // Creating time to add for UI.
+
+    const data = new Date();
+    const currentTime = new Intl.DateTimeFormat(navigator.languages[0], {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    }).format(data);
+
     const validInputs = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp));
     const allPositive = (...inputs) => inputs.every(inp => inp > 0);
@@ -294,7 +300,13 @@ class App {
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
-    const weatherArray = [imageWeather.src, tempC, weatherCondition, city];
+    const weatherArray = [
+      imageWeather.src,
+      tempC,
+      weatherCondition,
+      city,
+      currentTime,
+    ];
 
     // Weather data
 
@@ -370,7 +382,7 @@ class App {
       this._setLocalStorage();
 
       this._renderWorkout(workout);
-    }, 900);
+    }, 1000);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -383,7 +395,7 @@ class App {
     setTimeout(() => {
       this._workoutOptions();
       console.log(workout);
-    }, 950);
+    }, 1500);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
@@ -430,7 +442,7 @@ class App {
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <h2 class="workout__title">${workout.description} in ${
       workout.weatherArray[3]
-    }</h2>
+    }, ${workout.weatherArray[4]}</h2>
 
         <div class="dropdown">
             <select name="ability" class="options select__input">
@@ -1027,7 +1039,8 @@ class App {
     const containerEls = document.querySelectorAll(
       '.leaflet-routing-container'
     );
-    console.log(containerEls);
+
+    const containerPromise = Promise.resolve(containerEls);
 
     const parseNumber = function () {
       // Set Array with distance to empty array, every time when new workout is added
@@ -1055,26 +1068,27 @@ class App {
         //   console.log(res);
         // });
 
-        let currentEl = Array.from(containerEls).slice(-1);
-        console.log(currentEl);
+        containerPromise
+          .then(cont => {
+            console.log(cont);
+            let currentEl = Array.from(cont).slice(-1);
+            return currentEl;
+          })
+          .then(el => {
+            console.log(el);
+            [parsedNumber, unitsParsed] = el[0]
+              .querySelector('h3')
+              .textContent.split(' ');
 
-        console.log(currentEl[0]);
+            let units = unitsParsed.slice(0, -1);
 
-        [parsedNumber, unitsParsed] = currentEl[0]
-          .querySelector('h3')
-          .textContent.split(' ');
-
-        let units = unitsParsed.slice(0, -1);
-
-        if (units === 'm') {
-          parsedNumber = +(parsedNumber / 1000).toFixed(1);
-        }
-
-        // distanceArray.push(parsedNumber);
-        console.log(parsedNumber);
-      }, 750);
+            if (units === 'm') {
+              parsedNumber = +(parsedNumber / 1000).toFixed(1);
+            }
+          });
+      }, 800);
     };
-    console.log(containerEls);
+
     if (containerEls.length === routes.length) return;
     parseNumber();
 
@@ -1101,7 +1115,7 @@ class App {
       if (workouts.length >= 1) {
         changeStarterState('oneMore');
       }
-    }, 700);
+    }, 100);
   }
 
   _fetchWeather(lat, lng) {
@@ -1124,8 +1138,6 @@ class App {
         const data = await respGeo.json();
         city = data.city;
 
-        console.log(city);
-
         const weatherResp = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=${key}&q=${lat},
           ${lng}&aqi=no`
@@ -1144,9 +1156,9 @@ class App {
       tempC = weatherObj.current.temp_c;
       weatherCondition = weatherObj.current.condition.text;
 
-      time = new Date(weatherObj.location.localtime_epoch);
+      // time = new Date(weatherObj.location.localtime_epoch);
 
-      console.log(time);
+      // console.log(time);
     })();
   }
 }
