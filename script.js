@@ -5,12 +5,12 @@ class Workout {
   id = (Date.now() + '').slice(-10);
   clicks = 0;
 
-  constructor(coords, coordsFinish, distance, duration, weatherIcon) {
+  constructor(coords, coordsFinish, distance, duration, weatherArray) {
     this.coords = coords; // [lat, lng]
     this.coordsFinish = coordsFinish; // [lat, lng]
     this.distance = distance; // in km
     this.duration = duration; // in min
-    this.weatherIcon = weatherIcon; // img
+    this.weatherArray = weatherArray; // weather data
   }
 
   _setDescription() {
@@ -30,8 +30,8 @@ class Workout {
 class Running extends Workout {
   type = 'running';
 
-  constructor(coords, coordsFinish, distance, duration, weatherIcon, cadence) {
-    super(coords, coordsFinish, distance, duration, weatherIcon);
+  constructor(coords, coordsFinish, distance, duration, weatherArray, cadence) {
+    super(coords, coordsFinish, distance, duration, weatherArray);
     this.cadence = cadence;
     // this.calcPace();
     this._setDescription();
@@ -47,8 +47,15 @@ class Running extends Workout {
 class Cylcing extends Workout {
   type = 'cycling';
 
-  constructor(coords, coordsFinish, distance, duration, elevationGain) {
-    super(coords, coordsFinish, distance, duration, weatherIcon);
+  constructor(
+    coords,
+    coordsFinish,
+    distance,
+    duration,
+    weatherArray,
+    elevationGain
+  ) {
+    super(coords, coordsFinish, distance, duration, weatherArray);
     this.elevationGain = elevationGain;
     this.calcSpeed();
     this._setDescription();
@@ -103,8 +110,10 @@ let currentLocation;
 
 // Weather API
 
-const weatherIconEl = document.querySelector('.weather__icon');
+// const weatherIconEl = document.querySelector('.weather__icon');
 
+let weatherCondition;
+let tempC;
 let imageWeather;
 let weatherObj;
 const currentLat = 52.23;
@@ -277,13 +286,15 @@ class App {
 
     e.preventDefault();
 
-    // Get data from from
+    // Get data from form
     const type = inputType.value;
     const distance = 0;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
-    const weatherIcon = weatherIconEl;
+    const weatherArray = [imageWeather.src, tempC, weatherCondition];
+
+    // Weather data
 
     let workout;
 
@@ -311,7 +322,7 @@ class App {
         [latFinish, lngFinish],
         distance,
         duration,
-        weatherIcon,
+        weatherArray,
         cadence
       );
     }
@@ -332,11 +343,12 @@ class App {
         [latFinish, lngFinish],
         distance,
         duration,
-        weatherIcon,
+        weatherArray,
         elevation
       );
     }
 
+    console.log(imageWeather.src);
     // Add new object to workout array
     this.#workouts.push(workout);
 
@@ -354,7 +366,7 @@ class App {
       this._setLocalStorage();
 
       this._renderWorkout(workout);
-    }, 600);
+    }, 900);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -367,7 +379,7 @@ class App {
     setTimeout(() => {
       this._workoutOptions();
       console.log(workout);
-    }, 700);
+    }, 950);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
@@ -457,6 +469,19 @@ class App {
       }</span>
          <span class="workout__unit">spm</span>
         </div>
+
+        <div class="weather__container">
+            
+          <img class="weather__icon" src=${workout.weatherArray[0]}>
+          <div class="weather__detail">
+              <span class="weather__value">${workout.weatherArray[1]}</span>
+              <span class="weather__unit">c</span>
+           </div>            
+        </div>
+        <div class="weather__detail">
+            <span class="weather__condition">${workout.weatherArray[2]}</span>
+        </div>
+
       </li>
       `;
     }
@@ -482,12 +507,13 @@ class App {
     }
 
     form.insertAdjacentHTML('afterend', html);
+    const weatherEl = document.querySelector('.weather__icon');
+    // weatherEl.appendChild(workout.weatherIcon);
 
     // Find right workout
     const currentWorkout = this.#workouts.find(work => work.id === workout.id);
-    // Add Property weather icon
-    currentWorkout.weatherIcon = imageWeather;
-    console.log(currentWorkout);
+
+    // console.log(currentWorkout);
   }
 
   _moveToPopup(e) {
@@ -1037,7 +1063,7 @@ class App {
 
         // distanceArray.push(parsedNumber);
         console.log(parsedNumber);
-      }, 450);
+      }, 750);
     };
     console.log(containerEls);
     if (containerEls.length === routes.length) return;
@@ -1106,8 +1132,8 @@ class App {
       imageWeather = document.createElement('img');
       const imageUrl = weatherObj.current.condition.icon;
       imageWeather.src = imageUrl;
-
-      // sideBar.append(imageWeather);
+      tempC = weatherObj.current.temp_c;
+      weatherCondition = weatherObj.current.condition.text;
     })();
   }
 }
@@ -1123,3 +1149,4 @@ const app = new App();
 // 5) Re-build Running and Cylcing objects from Local Storage
 // 6) More realistic error and confirmation messages
 // 7) Ability to draw lines and shaped instead of just points
+// 8) Geocode location from coordinates
