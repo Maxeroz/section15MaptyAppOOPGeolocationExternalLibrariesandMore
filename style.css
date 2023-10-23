@@ -138,6 +138,8 @@ a:visited {
 
 .weather__condition {
   font-size: 1.2rem;
+  text-align: center;
+
   /* font-weight: 800; */
   /* text-transform: uppercase; */
   /* margin-right: 0.5rem; */

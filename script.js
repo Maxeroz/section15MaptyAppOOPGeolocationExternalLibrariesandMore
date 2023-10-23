@@ -112,6 +112,8 @@ let currentLocation;
 
 // const weatherIconEl = document.querySelector('.weather__icon');
 
+let time;
+let city;
 let weatherCondition;
 let tempC;
 let imageWeather;
@@ -292,7 +294,7 @@ class App {
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     const { lat: latFinish, lng: lngFinish } = this.#mapEventFinish.latlng;
-    const weatherArray = [imageWeather.src, tempC, weatherCondition];
+    const weatherArray = [imageWeather.src, tempC, weatherCondition, city];
 
     // Weather data
 
@@ -361,7 +363,9 @@ class App {
     setTimeout(() => {
       workout.distance = parsedNumber;
       console.log(workout);
-      workout.calcPace();
+
+      if (workout.type === 'running') workout.calcPace();
+      if (workout.type === 'cycling') workout.calcSpeed();
 
       this._setLocalStorage();
 
@@ -424,7 +428,9 @@ class App {
 
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
-        <h2 class="workout__title">${workout.description}</h2>
+        <h2 class="workout__title">${workout.description} in ${
+      workout.weatherArray[3]
+    }</h2>
 
         <div class="dropdown">
             <select name="ability" class="options select__input">
@@ -433,7 +439,20 @@ class App {
               <option value="workout--delete">Delete</option>
               
             </select>
-          <button class="btnSave">Save</butto>
+          <button class="btnSave">Save</button>
+
+          <div class="weather__container">
+            
+          <img class="weather__icon" src=${workout.weatherArray[0]}>
+          <div class="weather__detail">
+              <span class="weather__value">${workout.weatherArray[1]}</span>
+              <span class="weather__unit">c</span>
+           </div>            
+        </div>
+        <div class="weather__detail">
+            <span class="weather__condition">${workout.weatherArray[2]}</span>
+        </div>
+
         </div>
         
         <div class="workout__details">
@@ -470,17 +489,7 @@ class App {
          <span class="workout__unit">spm</span>
         </div>
 
-        <div class="weather__container">
-            
-          <img class="weather__icon" src=${workout.weatherArray[0]}>
-          <div class="weather__detail">
-              <span class="weather__value">${workout.weatherArray[1]}</span>
-              <span class="weather__unit">c</span>
-           </div>            
-        </div>
-        <div class="weather__detail">
-            <span class="weather__condition">${workout.weatherArray[2]}</span>
-        </div>
+       
 
       </li>
       `;
@@ -1109,13 +1118,13 @@ class App {
 
     (async function () {
       try {
-        // const respGeo = await fetch(
-        //   `https://geocode.xyz/${lat},${lng}?geoit=json&auth=715881696036124439037x17745`
-        // );
-        // const data = await respGeo.json();
-        // const city = data.city;
+        const respGeo = await fetch(
+          `https://geocode.xyz/${lat},${lng}?geoit=json&auth=715881696036124439037x17745`
+        );
+        const data = await respGeo.json();
+        city = data.city;
 
-        // console.log(city);
+        console.log(city);
 
         const weatherResp = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=${key}&q=${lat},
@@ -1134,6 +1143,10 @@ class App {
       imageWeather.src = imageUrl;
       tempC = weatherObj.current.temp_c;
       weatherCondition = weatherObj.current.condition.text;
+
+      time = new Date(weatherObj.location.localtime_epoch);
+
+      console.log(time);
     })();
   }
 }
@@ -1150,3 +1163,4 @@ const app = new App();
 // 6) More realistic error and confirmation messages
 // 7) Ability to draw lines and shaped instead of just points
 // 8) Geocode location from coordinates
+// 9) Display weather data for workout time and place
