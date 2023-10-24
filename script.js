@@ -388,7 +388,7 @@ class App {
           leafletDistanceParse._selectedRoute.summary.totalDistance;
 
         if (!summaryDistance) throw new Error('Distance not parsed');
-        console.log(summaryDistance);
+        // console.log(summaryDistance);
 
         const loadedDistance = summaryDistance;
 
@@ -416,6 +416,7 @@ class App {
         //     // this._renderWorkout(workout);
         //   }, 700);
         // }
+        this._workoutOptions();
         clearInterval(renderInterval);
       }, 300);
     } catch (err) {
