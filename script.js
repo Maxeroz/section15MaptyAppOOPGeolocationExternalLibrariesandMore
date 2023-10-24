@@ -368,15 +368,21 @@ class App {
 
     // Render workout on map as marker
     // this._rederWorkoutMarker(workout);
-    this._routingControl(workout);
+    const leafletDistanceParse = this._routingControl(workout);
 
-    this._parseNumberMethod();
+    // this._routingControl(workout);
+
+    // this._parseNumberMethod();
 
     // Render workout on list
 
     setTimeout(() => {
-      workout.distance = parsedNumber;
-      console.log(workout);
+      const summaryDistance =
+        leafletDistanceParse._selectedRoute.summary.totalDistance;
+      console.log(summaryDistance);
+      if (summaryDistance > 1000) {
+        workout.distance = (summaryDistance / 1000).toFixed(2);
+      }
 
       if (workout.type === 'running') workout.calcPace();
       if (workout.type === 'cycling') workout.calcSpeed();
@@ -384,7 +390,7 @@ class App {
       this._setLocalStorage();
 
       this._renderWorkout(workout);
-    }, 1000);
+    }, 700);
 
     // Hide form + clear input fields
     this._hideForm();
@@ -397,7 +403,7 @@ class App {
     setTimeout(() => {
       this._workoutOptions();
       console.log(workout);
-    }, 1500);
+    }, 2500);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
@@ -1049,6 +1055,8 @@ class App {
     routes.push(route);
 
     markers.push(workoutMarkers);
+
+    return route;
   }
 
   _renderStartedModal() {
@@ -1100,7 +1108,7 @@ class App {
         if (!weatherResp.ok) throw new Error(weatherResp.statusText);
 
         weatherObj = await weatherResp.json();
-        console.log(weatherObj);
+        // console.log(weatherObj);
       } catch (err) {
         console.error(err.message);
       }
@@ -1112,49 +1120,51 @@ class App {
       weatherCondition = weatherObj.current.condition.text;
       city = `${weatherObj.location.name}, ${weatherObj.location.region}, ${weatherObj.location.country}`;
 
+      // console.log(weatherObj);
+
       // time = new Date(weatherObj.location.localtime_epoch);
 
       // console.log(time);
     })();
   }
 
-  _parseNumberMethod() {
-    const containerEls = document.querySelectorAll(
-      '.leaflet-routing-container'
-    );
+  // _parseNumberMethod() {
+  //   const containerEls = document.querySelectorAll(
+  //     '.leaflet-routing-container'
+  //   );
 
-    console.log(containerEls);
+  //   console.log(containerEls);
 
-    const containerPromise = Promise.resolve(containerEls);
+  //   const containerPromise = Promise.resolve(containerEls);
 
-    const parseNumber = function () {
-      // Set Array with distance to empty array, every time when new workout is added
-      // distanceArray = [];
+  //   const parseNumber = function () {
+  //     // Set Array with distance to empty array, every time when new workout is added
+  //     // distanceArray = [];
 
-      // Parse number from Leaflet container
-      setTimeout(() => {
-        containerPromise
-          .then(cont => {
-            console.log(cont);
-            let currentEl = Array.from(cont).slice(-1);
-            return currentEl;
-          })
-          .then(el => {
-            console.log(el);
-            [parsedNumber, unitsParsed] = el[0]
-              .querySelector('h3')
-              .textContent.split(' ');
+  //     // Parse number from Leaflet container
+  //     setTimeout(() => {
+  //       containerPromise
+  //         .then(cont => {
+  //           // console.log(cont);
+  //           let currentEl = Array.from(cont).slice(-1);
+  //           return currentEl;
+  //         })
+  //         .then(el => {
+  //           // console.log(el);
+  //           [parsedNumber, unitsParsed] = el[0]
+  //             .querySelector('h3')
+  //             .textContent.split(' ');
 
-            let units = unitsParsed.slice(0, -1);
+  //           let units = unitsParsed.slice(0, -1);
 
-            if (units === 'm') {
-              parsedNumber = +(parsedNumber / 1000).toFixed(1);
-            }
-          });
-      }, 800);
-    };
-    parseNumber();
-  }
+  //           if (units === 'm') {
+  //             parsedNumber = +(parsedNumber / 1000).toFixed(1);
+  //           }
+  //         });
+  //     }, 1000);
+  //   };
+  //   parseNumber();
+  // }
 }
 
 const app = new App();
