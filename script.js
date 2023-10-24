@@ -376,21 +376,51 @@ class App {
 
     // Render workout on list
 
-    setTimeout(() => {
-      const summaryDistance =
-        leafletDistanceParse._selectedRoute.summary.totalDistance;
-      console.log(summaryDistance);
-      if (summaryDistance > 1000) {
-        workout.distance = (summaryDistance / 1000).toFixed(2);
-      }
+    try {
+      let summaryDistance;
 
-      if (workout.type === 'running') workout.calcPace();
-      if (workout.type === 'cycling') workout.calcSpeed();
+      const renderInterval = setInterval(() => {
+        console.log('Hello');
 
-      this._setLocalStorage();
+        // if (isFinite(leafletDistanceParse)) return;
 
-      this._renderWorkout(workout);
-    }, 700);
+        summaryDistance =
+          leafletDistanceParse._selectedRoute.summary.totalDistance;
+
+        if (!summaryDistance) throw new Error('Distance not parsed');
+        console.log(summaryDistance);
+
+        const loadedDistance = summaryDistance;
+
+        if (loadedDistance > 1000) {
+          workout.distance = (loadedDistance / 1000).toFixed(2);
+        } else {
+          workout.distance = (loadedDistance / 1000).toFixed(2);
+        }
+
+        if (workout.type === 'running') workout.calcPace();
+        if (workout.type === 'cycling') workout.calcSpeed();
+
+        this._setLocalStorage();
+        this._renderWorkout(workout);
+
+        // if (summaryDistance) {
+        //   if (!isFinite(summaryDistance)) return;
+        //   setTimeout(() => {
+        //     // if (summaryDistance > 1000) {
+        //     //   workout.distance = (summaryDistance / 1000).toFixed(2);
+        //     // }
+        //     // if (workout.type === 'running') workout.calcPace();
+        //     // if (workout.type === 'cycling') workout.calcSpeed();
+        //     // this._setLocalStorage();
+        //     // this._renderWorkout(workout);
+        //   }, 700);
+        // }
+        clearInterval(renderInterval);
+      }, 300);
+    } catch (err) {
+      console.error(err.message);
+    }
 
     // Hide form + clear input fields
     this._hideForm();
@@ -403,7 +433,7 @@ class App {
     setTimeout(() => {
       this._workoutOptions();
       console.log(workout);
-    }, 2500);
+    }, 300);
 
     // Attaching event listener to edit and delete options
     this._workoutOptions();
