@@ -381,14 +381,16 @@ class App {
 
       const renderInterval = setInterval(() => {
         console.log('Hello');
-
         // if (isFinite(leafletDistanceParse)) return;
 
-        summaryDistance =
-          leafletDistanceParse._selectedRoute.summary.totalDistance;
+        // summaryDistance =
+        //   leafletDistanceParse._selectedRoute.summary?.totalDistance;
 
-        if (!summaryDistance) throw new Error('Distance not parsed');
+        if (!leafletDistanceParse._selectedRoute?.summary) return;
         // console.log(summaryDistance);
+
+        summaryDistance =
+          leafletDistanceParse._selectedRoute.summary?.totalDistance;
 
         const loadedDistance = summaryDistance;
 
